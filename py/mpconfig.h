@@ -1349,4 +1349,9 @@ typedef double mp_float_t;
 #endif
 #endif
 
+#ifndef MICROPY_PY_EOSLIB
+#define MICROPY_PY_EOSLIB (1)
+#endif
+
+
 #endif // MICROPY_INCLUDED_PY_MPCONFIG_H

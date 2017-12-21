@@ -140,6 +140,30 @@ STATIC void do_load_from_lexer(mp_obj_t module_obj, mp_lexer_t *lex) {
     mp_obj_dict_t *mod_globals = mp_obj_module_get_globals(module_obj);
     mp_parse_compile_execute(lex, MP_PARSE_FILE_INPUT, mod_globals, mod_globals);
 }
+
+mp_obj_t micropy_load(const char *mod_name, const char *data, size_t len) {
+   qstr qstr_mod_name = qstr_from_str(mod_name);
+   mp_lexer_t *lex = mp_lexer_new_from_str_len(qstr_mod_name, data, (mp_uint_t)len, 0);
+   mp_obj_t module_obj = mp_obj_new_module(qstr_mod_name);
+   do_load_from_lexer(module_obj, lex);
+   return module_obj;
+}
+
+mp_obj_t micropy_call_0(mp_obj_t module_obj, const char *func) {
+   mp_obj_t py_func = mp_load_attr(module_obj, qstr_from_str(func));
+   return mp_call_function_0(py_func);
+}
+
+mp_obj_t micropy_call_2(mp_obj_t module_obj, const char *func, uint64_t code, uint64_t type) {
+   mp_obj_t py_func = mp_load_attr(module_obj, qstr_from_str(func));
+
+   mp_obj_t arg0 = mp_obj_new_int(code);
+   mp_obj_t arg1 = mp_obj_new_int(type);
+   return mp_call_function_2(py_func, arg0, arg1);
+}
+
+
+
 #endif
 
 #if MICROPY_PERSISTENT_CODE_LOAD || MICROPY_MODULE_FROZEN_MPY

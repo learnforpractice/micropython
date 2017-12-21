@@ -405,7 +405,7 @@ STATIC void set_sys_argv(char *argv[], int argc, int start_arg) {
 
 MP_NOINLINE int main_(int argc, char **argv);
 
-int main(int argc, char **argv) {
+int main_micropython(int argc, char **argv) {
     #if MICROPY_PY_THREAD
     mp_thread_init();
     #endif
@@ -430,7 +430,7 @@ MP_NOINLINE int main_(int argc, char **argv) {
     // scripts which want to follow unix shell pipe semantics (where SIGPIPE
     // means "pipe was requested to terminate, it's not an error"), should
     // catch EPIPE themselves.
-    signal(SIGPIPE, SIG_IGN);
+//    signal(SIGPIPE, SIG_IGN);
     #endif
 
     mp_stack_set_limit(40000 * (BYTES_PER_WORD / 4));
@@ -522,9 +522,9 @@ MP_NOINLINE int main_(int argc, char **argv) {
     printf("    cur   %d\n", m_get_current_bytes_allocated());
     printf("    peak  %d\n", m_get_peak_bytes_allocated());
     */
-
     const int NOTHING_EXECUTED = -2;
     int ret = NOTHING_EXECUTED;
+#if 0
     bool inspect = false;
     for (int a = 1; a < argc; a++) {
         if (argv[a][0] == '-') {
@@ -643,6 +643,7 @@ MP_NOINLINE int main_(int argc, char **argv) {
     free(heap);
 #endif
 
+#endif
     //printf("total bytes = %d\n", m_get_total_bytes_allocated());
     return ret & 0xff;
 }
