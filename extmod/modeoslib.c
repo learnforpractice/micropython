@@ -55,7 +55,6 @@ typedef struct _eoslib_stream_t {
 #define S_NEXT(s) (eoslib_stream_next(&(s)))
 
 STATIC mp_obj_t mod_eoslib_now(void) {
-   printf("hello,world");
    return mp_obj_new_int(now_());
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_0(mod_eoslib_now_obj, mod_eoslib_now);
@@ -91,6 +90,14 @@ STATIC mp_obj_t mod_eoslib_string_to_uint64(mp_obj_t obj) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(mod_eoslib_string_to_uint64_obj, mod_eoslib_string_to_uint64);
 
+STATIC mp_obj_t mod_eoslib_N(mp_obj_t obj) {
+   const char* account = mp_obj_get_type_str(obj);
+   uint64_t n = string_to_uint64_(account);
+   return mp_obj_new_int(n);
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_1(mod_eoslib_N_obj, mod_eoslib_N);
+
+
 STATIC mp_obj_t mod_eoslib_uint64_to_string(mp_obj_t obj) {
    uint64_t n = mp_obj_get_int(obj);
    const char* s = uint64_to_string_(n);
@@ -115,11 +122,13 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_1(mod_eoslib_unpack_obj, mod_eoslib_unpack);
 STATIC mp_obj_t mod_eoslib_store(size_t n_args, const mp_obj_t *args) {
    size_t keys_len = 0;
    size_t value_len = 0;
+   printf("mod_eoslib_store begin!");
    uint64_t scope = mp_obj_get_int(args[0]);
    uint64_t table = mp_obj_get_int(args[1]);
    void* keys = (void *)mp_obj_str_get_data(args[2], &keys_len);
    int key_type = mp_obj_get_int(args[3]);
    void* value = (void *)mp_obj_str_get_data(args[4], &value_len);
+   printf("+++++++++hello,world");
    int ret = store_(scope, table, keys, keys_len, key_type, value, value_len);
    return mp_obj_new_int(ret);
 }
@@ -134,6 +143,7 @@ STATIC const mp_rom_map_elem_t mp_module_eoslib_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR_require_notice), MP_ROM_PTR(&mod_eoslib_require_notice_obj) },
     { MP_ROM_QSTR(MP_QSTR_current_code), MP_ROM_PTR(&mod_eoslib_current_code_obj) },
     { MP_ROM_QSTR(MP_QSTR_string_to_uint64), MP_ROM_PTR(&mod_eoslib_string_to_uint64_obj) },
+    { MP_ROM_QSTR(MP_QSTR_N), MP_ROM_PTR(&mod_eoslib_N_obj) },
     { MP_ROM_QSTR(MP_QSTR_uint64_to_string), MP_ROM_PTR(&mod_eoslib_uint64_to_string_obj) },
     { MP_ROM_QSTR(MP_QSTR_pack), MP_ROM_PTR(&mod_eoslib_pack_obj) },
     { MP_ROM_QSTR(MP_QSTR_unpack), MP_ROM_PTR(&mod_eoslib_unpack_obj) },
