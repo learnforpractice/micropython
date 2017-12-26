@@ -418,7 +418,7 @@ mp_uint_t mp_obj_uint_get_checked(mp_const_obj_t self_in) {
         return MP_OBJ_SMALL_INT_VALUE(self_in);
     } else {
         const mp_obj_int_t *self = MP_OBJ_TO_PTR(self_in);
-        mp_int_t value;
+        mp_uint_t value;
         if (mpz_as_uint_checked(&self->mpz, &value)) {
             return value;
         } else {
