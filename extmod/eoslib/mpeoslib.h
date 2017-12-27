@@ -5,9 +5,12 @@
  *      Author: newworld
  */
 
-#ifndef EOSLIB__HPP_
-#define EOSLIB__HPP_
+#ifndef MPEOSLIB__HPP_
+#define MPEOSLIB__HPP_
 
+#ifdef __cplusplus
+   extern "C" {
+#endif
 
 #include <stdio.h>
 #include <string.h>
@@ -16,10 +19,6 @@
 #include "py/objstringio.h"
 #include "py/runtime.h"
 #include "py/stream.h"
-
-#ifdef __cplusplus
-   extern "C" {
-#endif
 
 
 uint32_t now_();
@@ -79,4 +78,4 @@ mp_obj_t  sha256_(const char* str, int nsize);
 #endif
 
 
-#endif /* EOSLIB__HPP_ */
+#endif /* MPEOSLIB__HPP_ */

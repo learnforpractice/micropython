@@ -1,12 +1,19 @@
 file(GLOB HEADERS "py/*.h")
 
+add_custom_command(
+    OUTPUT ${CMAKE_CURRENT_SOURCE_DIR}/ports/unix/dummy.c
+    COMMAND make axtls
+    COMMAND make lib
+    COMMAND touch ${CMAKE_CURRENT_SOURCE_DIR}/ports/unix/dummy.c
+    WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/ports/unix
+    COMMENT "build micropython python"
+    DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/extmod/eoslib/modeoslib.c ${CMAKE_CURRENT_SOURCE_DIR}/extmod/eoslib/mpeoslib.h
+)
 
-#add_executable( micropython
-
-
-## SORT .cpp by most likely to change / break compile
 add_library( micropython
-#             SHARED
+             STATIC
+${CMAKE_CURRENT_SOURCE_DIR}/ports/unix/dummy.c
+extmod/eoslib/modeoslib.c
 ports/unix/build/py/emitnx64.o
 ports/unix/main_eos.c
 ports/unix/gccollect.c

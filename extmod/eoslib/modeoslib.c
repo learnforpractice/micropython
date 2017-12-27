@@ -174,7 +174,6 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_VAR(mod_eoslib_##name##_str##_obj, 4, mod_eoslib_
    STATIC mp_obj_t mod_eoslib_##name##_str(size_t n_args, const mp_obj_t *args) { \
       char value[256]; \
       size_t keys_len = 0; \
-      size_t value_len = 0; \
       uint64_t scope = mp_obj_uint_get_checked(args[0]); \
       uint64_t code = mp_obj_uint_get_checked(args[1]); \
       uint64_t table = mp_obj_uint_get_checked(args[2]); \
