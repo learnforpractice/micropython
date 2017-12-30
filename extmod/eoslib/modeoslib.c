@@ -69,6 +69,13 @@ STATIC mp_obj_t mod_eoslib_read_message(void) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_0(mod_eoslib_read_message_obj, mod_eoslib_read_message);
 
+STATIC mp_obj_t mod_eoslib_require_auth(mp_obj_t obj) {
+   uint64_t account = mp_obj_uint_get_checked(obj);
+   require_auth_(account);
+   return mp_const_none;
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_1(mod_eoslib_require_auth_obj, mod_eoslib_require_auth);
+
 STATIC mp_obj_t mod_eoslib_require_scope(mp_obj_t obj) {
    uint64_t account = mp_obj_uint_get_checked(obj);
    require_scope_(account);
@@ -218,6 +225,7 @@ STATIC const mp_rom_map_elem_t mp_module_eoslib_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR___name__), MP_ROM_QSTR(MP_QSTR_eoslib) },
     { MP_ROM_QSTR(MP_QSTR_now), MP_ROM_PTR(&mod_eoslib_now_obj) },
     { MP_ROM_QSTR(MP_QSTR_read_message), MP_ROM_PTR(&mod_eoslib_read_message_obj) },
+    { MP_ROM_QSTR(MP_QSTR_require_auth), MP_ROM_PTR(&mod_eoslib_require_auth_obj) },
     { MP_ROM_QSTR(MP_QSTR_require_scope), MP_ROM_PTR(&mod_eoslib_require_scope_obj) },
     { MP_ROM_QSTR(MP_QSTR_require_notice), MP_ROM_PTR(&mod_eoslib_require_notice_obj) },
     { MP_ROM_QSTR(MP_QSTR_current_code), MP_ROM_PTR(&mod_eoslib_current_code_obj) },

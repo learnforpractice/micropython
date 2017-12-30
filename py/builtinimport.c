@@ -157,8 +157,8 @@ mp_obj_t micropy_call_0(mp_obj_t module_obj, const char *func) {
 mp_obj_t micropy_call_2(mp_obj_t module_obj, const char *func, uint64_t code, uint64_t type) {
    mp_obj_t py_func = mp_load_attr(module_obj, qstr_from_str(func));
 
-   mp_obj_t arg0 = mp_obj_new_int(code);
-   mp_obj_t arg1 = mp_obj_new_int(type);
+   mp_obj_t arg0 = mp_obj_new_int_from_ull(code);
+   mp_obj_t arg1 = mp_obj_new_int_from_ull(type);
    return mp_call_function_2(py_func, arg0, arg1);
 }
 
