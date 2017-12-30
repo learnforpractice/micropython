@@ -197,16 +197,16 @@ mp_obj_t mp_obj_int_binary_op(mp_binary_op_t op, mp_obj_t lhs_in, mp_obj_t rhs_i
     }
 
     if (0) {
-#if MICROPY_PY_BUILTINS_FLOAT
     } else if (op == MP_BINARY_OP_TRUE_DIVIDE || op == MP_BINARY_OP_INPLACE_TRUE_DIVIDE) {
-        if (mpz_is_zero(zrhs)) {
-            goto zero_division_error;
-        }
-        mp_float_t flhs = mpz_as_float(zlhs);
-        mp_float_t frhs = mpz_as_float(zrhs);
-        return mp_obj_new_float(flhs / frhs);
-#endif
+       mp_obj_int_t *res = mp_obj_int_new_mpz();
 
+       if (mpz_is_zero(zrhs)) {
+            mp_raise_msg(&mp_type_ZeroDivisionError, "division by zero");
+        }
+        mpz_t rem; mpz_init_zero(&rem);
+        mpz_divmod_inpl(&res->mpz, &rem, zlhs, zrhs);
+        mpz_deinit(&rem);
+        return MP_OBJ_FROM_PTR(res);
     } else if (op >= MP_BINARY_OP_INPLACE_OR && op < MP_BINARY_OP_CONTAINS) {
         mp_obj_int_t *res = mp_obj_int_new_mpz();
 
@@ -225,6 +225,7 @@ mp_obj_t mp_obj_int_binary_op(mp_binary_op_t op, mp_obj_t lhs_in, mp_obj_t rhs_i
                 break;
             case MP_BINARY_OP_FLOOR_DIVIDE:
             case MP_BINARY_OP_INPLACE_FLOOR_DIVIDE: {
+               printf("mpz floor div\n");
                 if (mpz_is_zero(zrhs)) {
                     zero_division_error:
                     mp_raise_msg(&mp_type_ZeroDivisionError, "division by zero");
