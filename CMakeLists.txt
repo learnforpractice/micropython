@@ -14,7 +14,7 @@ add_library( micropython
              STATIC
 ${CMAKE_CURRENT_SOURCE_DIR}/ports/unix/dummy.c
 extmod/eoslib/modeoslib.c
-ports/unix/build/py/emitnx64.o
+#ports/unix/build/py/emitnx64.o
 ports/unix/main_eos.c
 ports/unix/gccollect.c
 ports/unix/unix_mphal.c
@@ -50,8 +50,8 @@ ports/unix/coverage.c
     py/emitcommon.c
     py/emitbc.c
     py/asmbase.c
-    py/asmx64.c
-    py/emitnative.c
+#    py/asmx64.c
+#    py/emitnative.c
     py/asmthumb.c
     py/emitinlinethumb.c
     py/asmarm.c
