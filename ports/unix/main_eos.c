@@ -404,8 +404,12 @@ STATIC void set_sys_argv(char *argv[], int argc, int start_arg) {
 #endif
 
 MP_NOINLINE int main_(int argc, char **argv);
+void print_time();
+mp_obj_t micropy_load_raw_code(const char *mod_name, const char *file_str);
 
 int main_micropython(int argc, char **argv) {
+    int ret;
+    mp_obj_t module_obj;
     #if MICROPY_PY_THREAD
     mp_thread_init();
     #endif
@@ -415,7 +419,9 @@ int main_micropython(int argc, char **argv) {
     // this function. main_() itself may have other functions inlined (with
     // their own stack variables), that's why we need this main/main_ split.
     mp_stack_ctrl_init();
-    return main_(argc, argv);
+    ret = main_(argc, argv);
+//    micropy_load_raw_code("currency", "/Users/newworld/dev/pyeos/programs/pyeos/contracts/currency/currency.mpy");
+    return ret;
 }
 
 MP_NOINLINE int main_(int argc, char **argv) {

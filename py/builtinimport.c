@@ -140,12 +140,15 @@ STATIC void do_load_from_lexer(mp_obj_t module_obj, mp_lexer_t *lex) {
     mp_obj_dict_t *mod_globals = mp_obj_module_get_globals(module_obj);
     mp_parse_compile_execute(lex, MP_PARSE_FILE_INPUT, mod_globals, mod_globals);
 }
-
+void print_time();
 mp_obj_t micropy_load(const char *mod_name, const char *data, size_t len) {
    qstr qstr_mod_name = qstr_from_str(mod_name);
+   print_time();
    mp_lexer_t *lex = mp_lexer_new_from_str_len(qstr_mod_name, data, (mp_uint_t)len, 0);
+   print_time();
    mp_obj_t module_obj = mp_obj_new_module(qstr_mod_name);
    do_load_from_lexer(module_obj, lex);
+   print_time();
    return module_obj;
 }
 
@@ -255,6 +258,18 @@ STATIC void do_load(mp_obj_t module_obj, vstr_t *file) {
     // If we get here then the file was not frozen and we can't compile scripts.
     mp_raise_msg(&mp_type_ImportError, "script compilation not supported");
     #endif
+}
+
+mp_obj_t micropy_load_raw_code(const char *mod_name, const char *file_str) {
+   qstr qstr_mod_name = qstr_from_str(mod_name);
+   mp_obj_t module_obj = mp_obj_new_module(qstr_mod_name);
+
+   print_time();
+   mp_raw_code_t *raw_code = mp_raw_code_load_file(file_str);
+   printf("raw_code %llx\n", (uint64_t)raw_code);
+   do_execute_raw_code(module_obj, raw_code);
+   print_time();
+   return module_obj;
 }
 
 STATIC void chop_component(const char *start, const char **end) {
