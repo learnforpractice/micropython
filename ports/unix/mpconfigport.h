@@ -107,6 +107,8 @@
 #define MICROPY_PY_IO_FILEIO        (0)
 #define MICROPY_PY_STRINGIO         (1)
 #define MICROPY_PY_EOSLIB           (0)
+#define MICROPY_PY_RAILIB              (1)
+
 
 #define MICROPY_PY_CMATH            (1)
 #define MICROPY_PY_GC_COLLECT_RETVAL (1)

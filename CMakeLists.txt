@@ -45,7 +45,7 @@ ${CMAKE_CURRENT_SOURCE_DIR}/ports/unix/dummy.c
 ##extmod/modwebrepl.c
 #extmod/uos_dupterm.c
 #extmod/modframebuf.c
-
+extmod/rai/modrailib.c
 
 ports/unix/main_eos.c
 ports/unix/gccollect.c

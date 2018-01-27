@@ -609,7 +609,7 @@ void nlr_jump_fail(void *val) {
 
 void print_time()
 {
-   printf("now: %ld\n", mp_hal_ticks_us());
+   printf("now: %lu\n", mp_hal_ticks_us());
 }
 
 void* execute_from_str(const char *str) {
