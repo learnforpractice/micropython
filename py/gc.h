@@ -26,6 +26,10 @@
 #ifndef MICROPY_INCLUDED_PY_GC_H
 #define MICROPY_INCLUDED_PY_GC_H
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #include <stdint.h>
 
 #include "py/mpconfig.h"
@@ -63,5 +67,10 @@ typedef struct _gc_info_t {
 void gc_info(gc_info_t *info);
 void gc_dump_info(void);
 void gc_dump_alloc_table(void);
+
+#ifdef __cplusplus
+}
+#endif
+
 
 #endif // MICROPY_INCLUDED_PY_GC_H

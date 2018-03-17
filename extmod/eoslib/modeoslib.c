@@ -26,6 +26,7 @@
 
 
 #include "mpeoslib.h"
+#include <stdlib.h>
 
 #if MICROPY_PY_EOSLIB
 
@@ -59,41 +60,49 @@ const int KEY_TYPE_KEY128x128 = 1;
 const int KEY_TYPE_KEY64x64x64 = 2;
 const int KEY_TYPE_STR = 3;
 
+
+
+
+#define DB_METHOD_SEQ(SUFFIX) \
+   int store_##SUFFIX(uint64_t scope, uint64_t table, char* keys, size_t keys_len, char* data, size_t data_len); \
+   int update_##SUFFIX(uint64_t scope, uint64_t table, char* keys, size_t keys_len, char* data, size_t data_len); \
+   int remove_##SUFFIX(uint64_t scope, uint64_t table, char* keys);
+
+#define DB_INDEX_METHOD_SEQ(SUFFIX)\
+   int load_##SUFFIX(int64_t scope, int64_t code, int64_t table, char* keys, size_t keys_len, char* data, size_t data_len); \
+	int front_##SUFFIX(int64_t scope, int64_t code, int64_t table, char* keys, size_t keys_len, char* data, size_t data_len); \
+	int previous_##SUFFIX(int64_t scope, int64_t code, int64_t table, char* keys, size_t keys_len, char* data, size_t data_len); \
+   int back_##SUFFIX(int64_t scope, int64_t code, int64_t table, char* keys, size_t keys_len, char* data, size_t data_len); \
+	int next_##SUFFIX(int64_t scope, int64_t code, int64_t table, char* keys, size_t keys_len, char* data, size_t data_len); \
+	int lower_bound_##SUFFIX(int64_t scope, int64_t code, int64_t table, char* keys, size_t keys_len, char* data, size_t data_len); \
+   int upper_bound_##SUFFIX(int64_t scope, int64_t code, int64_t table,char* keys, size_t keys_len,  char* data, size_t data_len);
+
+DB_METHOD_SEQ(i64)
+DB_METHOD_SEQ(i128i128)
+DB_METHOD_SEQ(i64i64)
+DB_METHOD_SEQ(i64i64i64)
+
+
+
+DB_INDEX_METHOD_SEQ(i64)
+
+DB_INDEX_METHOD_SEQ(primary_i128i128)
+DB_INDEX_METHOD_SEQ(secondary_i128i128)
+
+DB_INDEX_METHOD_SEQ(primary_i64i64)
+DB_INDEX_METHOD_SEQ(secondary_i64i64)
+
+DB_INDEX_METHOD_SEQ(primary_i64i64i64)
+DB_INDEX_METHOD_SEQ(secondary_i64i64i64)
+DB_INDEX_METHOD_SEQ(tertiary_i64i64i64)
+
+
+
+
 STATIC mp_obj_t mod_eoslib_now(void) {
    return mp_obj_new_int(now_());
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_0(mod_eoslib_now_obj, mod_eoslib_now);
-
-STATIC mp_obj_t mod_eoslib_read_message(void) {
-   return read_message_();
-}
-STATIC MP_DEFINE_CONST_FUN_OBJ_0(mod_eoslib_read_message_obj, mod_eoslib_read_message);
-
-STATIC mp_obj_t mod_eoslib_require_auth(mp_obj_t obj) {
-   uint64_t account = mp_obj_uint_get_checked(obj);
-   require_auth_(account);
-   return mp_const_none;
-}
-STATIC MP_DEFINE_CONST_FUN_OBJ_1(mod_eoslib_require_auth_obj, mod_eoslib_require_auth);
-
-STATIC mp_obj_t mod_eoslib_require_scope(mp_obj_t obj) {
-   uint64_t account = mp_obj_uint_get_checked(obj);
-   require_scope_(account);
-   return mp_const_none;
-}
-STATIC MP_DEFINE_CONST_FUN_OBJ_1(mod_eoslib_require_scope_obj, mod_eoslib_require_scope);
-
-STATIC mp_obj_t mod_eoslib_current_code(void) {
-   return mp_obj_new_int_from_ull(current_code_());
-}
-STATIC MP_DEFINE_CONST_FUN_OBJ_0(mod_eoslib_current_code_obj, mod_eoslib_current_code);
-
-STATIC mp_obj_t mod_eoslib_require_notice(mp_obj_t obj) {
-   uint64_t account = mp_obj_uint_get_checked(obj);
-   require_notice_(account);
-   return mp_const_none;
-}
-STATIC MP_DEFINE_CONST_FUN_OBJ_1(mod_eoslib_require_notice_obj, mod_eoslib_require_notice);
 
 STATIC mp_obj_t mod_eoslib_s2n(mp_obj_t obj) {
    size_t len;
@@ -133,35 +142,76 @@ STATIC mp_obj_t mod_eoslib_unpack(mp_obj_t obj) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(mod_eoslib_unpack_obj, mod_eoslib_unpack);
 
-#define DEFINE_WRITE_FUNCTION(name) \
-STATIC mp_obj_t mod_eoslib_##name(size_t n_args, const mp_obj_t *args) { \
+
+#define i64_Size (8)
+#define i128i128_Size (32)
+#define i64i64_Size 16
+#define i64i64i64_Size 24
+
+#define DEFINE_WRITE_FUNCTION(NAME, SUFFIX) \
+STATIC mp_obj_t mod_eoslib_##NAME##_##SUFFIX(size_t n_args, const mp_obj_t *args) { \
    size_t keys_len = 0; \
    size_t value_len = 0; \
    uint64_t scope = mp_obj_uint_get_checked(args[0]); \
    uint64_t table = mp_obj_uint_get_checked(args[1]); \
    void* keys = (void *)mp_obj_str_get_data(args[2], &keys_len); \
-   int key_type = mp_obj_uint_get_checked(args[3]); \
-   void* value = (void *)mp_obj_str_get_data(args[4], &value_len); \
-   int ret = name##_(scope, table, keys, keys_len, key_type, value, value_len); \
+   if (SUFFIX##_Size != keys_len) { \
+		return mp_obj_new_int(0); \
+	} \
+   void* value = (void *)mp_obj_str_get_data(args[3], &value_len); \
+   int ret = NAME##_##SUFFIX(scope, table, keys, keys_len, value, value_len); \
    return mp_obj_new_int(ret); \
 } \
-STATIC MP_DEFINE_CONST_FUN_OBJ_VAR(mod_eoslib_##name##_obj, 5, mod_eoslib_##name);
+STATIC MP_DEFINE_CONST_FUN_OBJ_VAR(mod_eoslib_##NAME##_##SUFFIX##_obj, 4, mod_eoslib_##NAME##_##SUFFIX);
 
-#define DEFINE_READ_FUNCTION(name) \
-   STATIC mp_obj_t mod_eoslib_##name(size_t n_args, const mp_obj_t *args) { \
+#define DEFINE_REMOVE_FUNCTION(SUFFIX) \
+STATIC mp_obj_t mod_eoslib_remove_##SUFFIX(size_t n_args, const mp_obj_t *args) { \
+   size_t keys_len = 0; \
+   uint64_t scope = mp_obj_uint_get_checked(args[0]); \
+   uint64_t table = mp_obj_uint_get_checked(args[1]); \
+   void* keys = (void *)mp_obj_str_get_data(args[2], &keys_len); \
+   if (SUFFIX##_Size != keys_len) { \
+		return mp_obj_new_int(0); \
+	} \
+   int ret = remove_##SUFFIX(scope, table, keys); \
+   return mp_obj_new_int(ret); \
+} \
+STATIC MP_DEFINE_CONST_FUN_OBJ_VAR(mod_eoslib_remove_##SUFFIX##_obj, 3, mod_eoslib_remove_##SUFFIX);
+
+
+#define DEFINE_READ_FUNCTION(name, SUFFIX) \
+   STATIC mp_obj_t mod_eoslib_##name##_##SUFFIX(size_t n_args, const mp_obj_t *args) { \
       size_t keys_len = 0; \
       size_t value_len = 0; \
       uint64_t scope = mp_obj_uint_get_checked(args[0]); \
       uint64_t code = mp_obj_uint_get_checked(args[1]); \
       uint64_t table = mp_obj_uint_get_checked(args[2]); \
       void* keys = (void *)mp_obj_str_get_data(args[3], &keys_len); \
-      int key_type = mp_obj_uint_get_checked(args[4]); \
-      int key_index = mp_obj_uint_get_checked(args[5]); \
-      void* value = (void *)mp_obj_str_get_data(args[6], &value_len); \
-      int ret = name##_(scope, code, table, keys, keys_len, key_type, key_index, value, value_len); \
+      if (SUFFIX##_Size != keys_len) { \
+   		return mp_obj_new_int(0); \
+      } \
+      void* value = (void *)mp_obj_str_get_data(args[4], &value_len); \
+      int ret = name##_##SUFFIX(scope, code, table, keys, keys_len, value, value_len); \
       return mp_obj_new_int(ret); \
    } \
-   STATIC MP_DEFINE_CONST_FUN_OBJ_VAR(mod_eoslib_##name##_obj, 7, mod_eoslib_##name);
+   STATIC MP_DEFINE_CONST_FUN_OBJ_VAR(mod_eoslib_##name##_##SUFFIX##_obj, 5, mod_eoslib_##name##_##SUFFIX);
+
+#define MPY_DB_METHOD_SEQ(SUFFIX) \
+	DEFINE_WRITE_FUNCTION(store, SUFFIX) \
+	DEFINE_WRITE_FUNCTION(update, SUFFIX) \
+	DEFINE_REMOVE_FUNCTION(SUFFIX)
+
+#define MPY_DB_INDEX_METHOD_SEQ(SUFFIX)\
+	DEFINE_READ_FUNCTION(load, SUFFIX) \
+	DEFINE_READ_FUNCTION(front, SUFFIX) \
+	DEFINE_READ_FUNCTION(previous, SUFFIX) \
+	DEFINE_READ_FUNCTION(back, SUFFIX) \
+	DEFINE_READ_FUNCTION(next, SUFFIX) \
+	DEFINE_READ_FUNCTION(lower_bound, SUFFIX) \
+	DEFINE_READ_FUNCTION(upper_bound, SUFFIX)
+
+MPY_DB_METHOD_SEQ(i64)
+MPY_DB_INDEX_METHOD_SEQ(i64)
 
 
 #define DEFINE_WRITE_STR_FUNCTION(name) \
@@ -172,7 +222,7 @@ STATIC mp_obj_t mod_eoslib_##name##_str(size_t n_args, const mp_obj_t *args) { \
    uint64_t table = mp_obj_uint_get_checked(args[1]); \
    void* keys = (void *)mp_obj_str_get_data(args[2], &keys_len); \
    void* value = (void *)mp_obj_str_get_data(args[3], &value_len); \
-   int ret = name##_(scope, table, keys, keys_len, KEY_TYPE_STR, value, value_len); \
+   int ret = name##_str_(scope, table, keys, keys_len, value, value_len); \
    return mp_obj_new_int(ret); \
 } \
 STATIC MP_DEFINE_CONST_FUN_OBJ_VAR(mod_eoslib_##name##_str##_obj, 4, mod_eoslib_##name##_str);
@@ -185,7 +235,7 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_VAR(mod_eoslib_##name##_str##_obj, 4, mod_eoslib_
       uint64_t code = mp_obj_uint_get_checked(args[1]); \
       uint64_t table = mp_obj_uint_get_checked(args[2]); \
       void* keys = (void *)mp_obj_str_get_data(args[3], &keys_len); \
-      int ret = name##_(scope, code, table, keys, keys_len, KEY_TYPE_STR, 0, value, sizeof(value)); \
+      int ret = name##_str_(scope, code, table, keys, keys_len,value, sizeof(value)); \
       if (ret > 0) { \
          return mp_obj_new_str(value, ret); \
       } else { \
@@ -194,23 +244,18 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_VAR(mod_eoslib_##name##_str##_obj, 4, mod_eoslib_
    } \
    STATIC MP_DEFINE_CONST_FUN_OBJ_VAR(mod_eoslib_##name##_str##_obj, 4, mod_eoslib_##name##_str);
 
-
-DEFINE_WRITE_FUNCTION(store)
-DEFINE_WRITE_FUNCTION(update)
-DEFINE_WRITE_FUNCTION(remove)
-
-DEFINE_READ_FUNCTION(load)
-DEFINE_READ_FUNCTION(front)
-DEFINE_READ_FUNCTION(back)
-DEFINE_READ_FUNCTION(next)
-DEFINE_READ_FUNCTION(previous)
-DEFINE_READ_FUNCTION(lower_bound)
-DEFINE_READ_FUNCTION(upper_bound)
-
-
 DEFINE_WRITE_STR_FUNCTION(store)
 DEFINE_WRITE_STR_FUNCTION(update)
-DEFINE_WRITE_STR_FUNCTION(remove)
+
+STATIC mp_obj_t mod_eoslib_remove_str(size_t n_args, const mp_obj_t *args) {
+   size_t keys_len = 0;
+   uint64_t scope = mp_obj_uint_get_checked(args[0]);
+   uint64_t table = mp_obj_uint_get_checked(args[1]);
+   void* keys = (void *)mp_obj_str_get_data(args[2], &keys_len);
+   int ret = remove_str_(scope, table, keys, keys_len);
+   return mp_obj_new_int(ret);
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_VAR(mod_eoslib_remove_str_obj, 3, mod_eoslib_remove_str);
 
 DEFINE_READ_STR_FUNCTION(load)
 DEFINE_READ_STR_FUNCTION(front)
@@ -220,30 +265,114 @@ DEFINE_READ_STR_FUNCTION(previous)
 DEFINE_READ_STR_FUNCTION(lower_bound)
 DEFINE_READ_STR_FUNCTION(upper_bound)
 
+STATIC mp_obj_t mod_eoslib_read_action(void) {
+	size_t size = action_size();
+	if (size == 0) {
+		return mp_const_none;
+	}
+	char *data = malloc(size);
+	read_action(data, size);
+	mp_obj_t obj = mp_obj_new_str(data, size);
+	free(data);
+   return obj;
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_0(mod_eoslib_read_action_obj, mod_eoslib_read_action);
+
+
+int read_action(char* memory, size_t size);
+
+#define METHOD0(NAME) \
+STATIC mp_obj_t mod_eoslib_##NAME(void) { \
+   return mp_obj_new_int(NAME()); \
+} \
+STATIC MP_DEFINE_CONST_FUN_OBJ_0(mod_eoslib_##NAME##_obj, mod_eoslib_##NAME);
+
+METHOD0(action_size)
+METHOD0(current_receiver)
+METHOD0(publication_time)
+METHOD0(current_sender)
+
+
+#define METHOD1(NAME) \
+STATIC mp_obj_t mod_eoslib_##NAME(mp_obj_t obj1) { \
+   uint64_t arg1 = mp_obj_uint_get_checked(obj1); \
+   NAME(arg1); \
+   return mp_const_none; \
+} \
+STATIC MP_DEFINE_CONST_FUN_OBJ_1(mod_eoslib_##NAME##_obj, mod_eoslib_##NAME);
+
+
+#define METHOD2(NAME) \
+STATIC mp_obj_t mod_eoslib_##NAME(mp_obj_t obj1, mp_obj_t obj2) { \
+   uint64_t arg1 = mp_obj_uint_get_checked(obj1); \
+   uint64_t arg2 = mp_obj_uint_get_checked(obj2); \
+   NAME(arg1,arg2); \
+   return mp_const_none; \
+} \
+STATIC MP_DEFINE_CONST_FUN_OBJ_2(mod_eoslib_##NAME##_obj, mod_eoslib_##NAME);
+
+METHOD1(require_auth)
+METHOD2(require_auth_ex)
+METHOD1(require_write_lock)
+METHOD2(require_read_lock)
+METHOD1(require_recipient)
+
+STATIC mp_obj_t mod_eoslib_is_account(mp_obj_t obj1) {
+   uint64_t arg1 = mp_obj_uint_get_checked(obj1);
+   is_account(arg1);
+   return mp_const_none;
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_1(mod_eoslib_is_account_obj, mod_eoslib_is_account);
+
+
+
+#if 0
+STATIC mp_obj_t mod_eoslib_send_inline(size_t n_args, const mp_obj_t *args) {
+	return 0;
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_VAR(mod_eoslib_send_inline_obj, 3, mod_eoslib_send_inline);
+#endif
+
+/*
+      account_name               account;
+      action_name                name;
+      vector<permission_level>   authorization;
+      bytes                      data;
+*/
 
 STATIC const mp_rom_map_elem_t mp_module_eoslib_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR___name__), MP_ROM_QSTR(MP_QSTR_eoslib) },
-    { MP_ROM_QSTR(MP_QSTR_now), MP_ROM_PTR(&mod_eoslib_now_obj) },
-    { MP_ROM_QSTR(MP_QSTR_read_message), MP_ROM_PTR(&mod_eoslib_read_message_obj) },
-    { MP_ROM_QSTR(MP_QSTR_require_auth), MP_ROM_PTR(&mod_eoslib_require_auth_obj) },
-    { MP_ROM_QSTR(MP_QSTR_require_scope), MP_ROM_PTR(&mod_eoslib_require_scope_obj) },
-    { MP_ROM_QSTR(MP_QSTR_require_notice), MP_ROM_PTR(&mod_eoslib_require_notice_obj) },
-    { MP_ROM_QSTR(MP_QSTR_current_code), MP_ROM_PTR(&mod_eoslib_current_code_obj) },
-    { MP_ROM_QSTR(MP_QSTR_s2n), MP_ROM_PTR(&mod_eoslib_s2n_obj) },
+	 { MP_ROM_QSTR(MP_QSTR_read_action), MP_ROM_PTR(&mod_eoslib_read_action_obj) },
+	 { MP_ROM_QSTR(MP_QSTR_action_size), MP_ROM_PTR(&mod_eoslib_action_size_obj) },
+	 { MP_ROM_QSTR(MP_QSTR_current_receiver), MP_ROM_PTR(&mod_eoslib_current_receiver_obj) },
+	 { MP_ROM_QSTR(MP_QSTR_publication_time), MP_ROM_PTR(&mod_eoslib_publication_time_obj) },
+	 { MP_ROM_QSTR(MP_QSTR_current_sender), MP_ROM_PTR(&mod_eoslib_current_sender_obj) },
+
+	 { MP_ROM_QSTR(MP_QSTR_require_auth), MP_ROM_PTR(&mod_eoslib_require_auth_obj) },
+	 { MP_ROM_QSTR(MP_QSTR_require_auth_ex), MP_ROM_PTR(&mod_eoslib_require_auth_ex_obj) },
+	 { MP_ROM_QSTR(MP_QSTR_require_write_lock), MP_ROM_PTR(&mod_eoslib_require_write_lock_obj) },
+	 { MP_ROM_QSTR(MP_QSTR_require_read_lock), MP_ROM_PTR(&mod_eoslib_require_read_lock_obj) },
+	 { MP_ROM_QSTR(MP_QSTR_require_recipient), MP_ROM_PTR(&mod_eoslib_require_recipient_obj) },
+	 { MP_ROM_QSTR(MP_QSTR_is_account), MP_ROM_PTR(&mod_eoslib_is_account_obj) },
+
+	 { MP_ROM_QSTR(MP_QSTR_store_i64), MP_ROM_PTR(&mod_eoslib_store_i64_obj) },
+	 { MP_ROM_QSTR(MP_QSTR_update_i64), MP_ROM_PTR(&mod_eoslib_update_i64_obj) },
+	 { MP_ROM_QSTR(MP_QSTR_remove_i64), MP_ROM_PTR(&mod_eoslib_remove_i64_obj) },
+
+	 { MP_ROM_QSTR(MP_QSTR_load_i64), MP_ROM_PTR(&mod_eoslib_load_i64_obj) },
+	 { MP_ROM_QSTR(MP_QSTR_front_i64), MP_ROM_PTR(&mod_eoslib_front_i64_obj) },
+	 { MP_ROM_QSTR(MP_QSTR_previous_i64), MP_ROM_PTR(&mod_eoslib_previous_i64_obj) },
+	 { MP_ROM_QSTR(MP_QSTR_back_i64), MP_ROM_PTR(&mod_eoslib_back_i64_obj) },
+	 { MP_ROM_QSTR(MP_QSTR_next_i64), MP_ROM_PTR(&mod_eoslib_next_i64_obj) },
+	 { MP_ROM_QSTR(MP_QSTR_lower_bound_i64), MP_ROM_PTR(&mod_eoslib_lower_bound_i64_obj) },
+	 { MP_ROM_QSTR(MP_QSTR_upper_bound_i64), MP_ROM_PTR(&mod_eoslib_upper_bound_i64_obj) },
+
+	 { MP_ROM_QSTR(MP_QSTR_now), MP_ROM_PTR(&mod_eoslib_now_obj) },
+	 { MP_ROM_QSTR(MP_QSTR_s2n), MP_ROM_PTR(&mod_eoslib_s2n_obj) },
     { MP_ROM_QSTR(MP_QSTR_N), MP_ROM_PTR(&mod_eoslib_N_obj) },
     { MP_ROM_QSTR(MP_QSTR_n2s), MP_ROM_PTR(&mod_eoslib_n2s_obj) },
     { MP_ROM_QSTR(MP_QSTR_pack), MP_ROM_PTR(&mod_eoslib_pack_obj) },
     { MP_ROM_QSTR(MP_QSTR_unpack), MP_ROM_PTR(&mod_eoslib_unpack_obj) },
-    { MP_ROM_QSTR(MP_QSTR_store), MP_ROM_PTR(&mod_eoslib_store_obj) },
-    { MP_ROM_QSTR(MP_QSTR_update), MP_ROM_PTR(&mod_eoslib_update_obj) },
-    { MP_ROM_QSTR(MP_QSTR_remove), MP_ROM_PTR(&mod_eoslib_remove_obj) },
-    { MP_ROM_QSTR(MP_QSTR_load), MP_ROM_PTR(&mod_eoslib_load_obj) },
-    { MP_ROM_QSTR(MP_QSTR_front), MP_ROM_PTR(&mod_eoslib_front_obj) },
-    { MP_ROM_QSTR(MP_QSTR_back), MP_ROM_PTR(&mod_eoslib_back_obj) },
-    { MP_ROM_QSTR(MP_QSTR_next), MP_ROM_PTR(&mod_eoslib_next_obj) },
-    { MP_ROM_QSTR(MP_QSTR_previous), MP_ROM_PTR(&mod_eoslib_previous_obj) },
-    { MP_ROM_QSTR(MP_QSTR_lower_bound), MP_ROM_PTR(&mod_eoslib_lower_bound_obj) },
-    { MP_ROM_QSTR(MP_QSTR_upper_bound), MP_ROM_PTR(&mod_eoslib_upper_bound_obj) },
 
     { MP_ROM_QSTR(MP_QSTR_store_str), MP_ROM_PTR(&mod_eoslib_store_str_obj) },
     { MP_ROM_QSTR(MP_QSTR_update_str), MP_ROM_PTR(&mod_eoslib_update_str_obj) },
@@ -255,7 +384,6 @@ STATIC const mp_rom_map_elem_t mp_module_eoslib_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR_previous_str), MP_ROM_PTR(&mod_eoslib_previous_str_obj) },
     { MP_ROM_QSTR(MP_QSTR_lower_bound_str), MP_ROM_PTR(&mod_eoslib_lower_bound_str_obj) },
     { MP_ROM_QSTR(MP_QSTR_upper_bound_str), MP_ROM_PTR(&mod_eoslib_upper_bound_str_obj) },
-
 };
 
 STATIC MP_DEFINE_CONST_DICT(mp_module_eoslib_globals, mp_module_eoslib_globals_table);

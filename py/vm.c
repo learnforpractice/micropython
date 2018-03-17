@@ -118,6 +118,7 @@ typedef enum {
     exc_sp--; /* pop back to previous exception handler */ \
     CLEAR_SYS_EXC_INFO() /* just clear sys.exc_info(), not compliant, but it shouldn't be used in 1st place */
 
+int is_execution_time_expire();
 // fastn has items in reverse order (fastn[0] is local[0], fastn[-1] is local[1], etc)
 // sp points to bottom of stack which grows up
 // returns:
@@ -136,16 +137,41 @@ mp_vm_return_kind_t mp_execute_bytecode(mp_code_state_t *code_state, volatile mp
 #if MICROPY_OPT_COMPUTED_GOTO
     #include "py/vmentrytable.h"
     #define DISPATCH() do { \
-        TRACE(ip); \
+		if (is_execution_time_expire()) { \
+			mp_obj_t obj = mp_obj_new_exception_msg(&mp_type_RuntimeError, "execution timeout!"); \
+			RAISE(obj); \
+		} \
+		TRACE(ip); \
         MARK_EXC_IP_GLOBAL(); \
         goto *entry_table[*ip++]; \
     } while (0)
-    #define DISPATCH_WITH_PEND_EXC_CHECK() goto pending_exception_check
-    #define ENTRY(op) entry_##op
+
+	#define DISPATCH_WITH_PEND_EXC_CHECK() \
+	do { \
+		if (is_execution_time_expire()) { \
+			mp_obj_t obj = mp_obj_new_exception_msg(&mp_type_RuntimeError, "execution timeout!"); \
+			RAISE(obj); \
+		} \
+		goto pending_exception_check; \
+	} while (0)
+
+	#define ENTRY(op) entry_##op
     #define ENTRY_DEFAULT entry_default
 #else
-    #define DISPATCH() break
-    #define DISPATCH_WITH_PEND_EXC_CHECK() goto pending_exception_check
+    #define DISPATCH() \
+		if (is_execution_time_expire()) { \
+			mp_obj_t obj = mp_obj_new_exception_msg(&mp_type_RuntimeError, "execution timeout!"); \
+			RAISE(obj); \
+		} \
+		break
+
+	#define DISPATCH_WITH_PEND_EXC_CHECK() \
+		if (is_execution_time_expire()) { \
+			mp_obj_t obj = mp_obj_new_exception_msg(&mp_type_RuntimeError, "execution timeout!"); \
+			RAISE(obj); \
+		} \
+		goto pending_exception_check
+
     #define ENTRY(op) case op
     #define ENTRY_DEFAULT default
 #endif
