@@ -22,11 +22,23 @@
 
 
 uint32_t now();
-void require_auth_(uint64_t account);
-mp_obj_t read_message_();
-void require_scope_(uint64_t account);
-void require_notice_(uint64_t account);
-uint64_t current_code_();
+void abort();
+void eosio_assert(int condition, const char* str);
+//class crypto_api
+void assert_recover_key( const char* data, size_t data_len,
+						const char* sig, size_t siglen,
+						const char* pub, size_t publen );
+mp_obj_t recover_key(const char* data, size_t size, const char* sig, size_t siglen );
+void assert_sha256(const char* data, size_t datalen, const char* hash, size_t hash_len);
+void assert_sha1(const char* data, size_t datalen, const char* hash, size_t hash_len);
+void assert_sha512(const char* data, size_t datalen, const char* hash, size_t hash_len);
+void assert_ripemd160(const char* data, size_t datalen, const char* hash, size_t hash_len);
+mp_obj_t sha1(const char* data, size_t datalen);
+mp_obj_t sha256(const char* data, size_t datalen);
+mp_obj_t sha512(const char* data, size_t datalen);
+mp_obj_t ripemd160(const char* data, size_t datalen);
+
+
 
 uint64_t string_to_uint64_(const char* str);
 mp_obj_t uint64_to_string_(uint64_t n);
