@@ -7,11 +7,11 @@ add_custom_command(
     COMMAND touch ${CMAKE_CURRENT_SOURCE_DIR}/ports/unix/dummy.c
     WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/ports/unix
     COMMENT "build micropython python"
-    DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/extmod/eoslib/modeoslib.c ${CMAKE_CURRENT_SOURCE_DIR}/extmod/eoslib/mpeoslib.h
+#    DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/extmod/eoslib/modeoslib.c ${CMAKE_CURRENT_SOURCE_DIR}/extmod/eoslib/mpeoslib.h
 )
 
 add_library( micropython
-             STATIC
+             SHARED
 ${CMAKE_CURRENT_SOURCE_DIR}/ports/unix/dummy.c
 #ports/unix/build/py/emitnx64.o
 #ports/unix/mpthreadport.c
@@ -45,9 +45,8 @@ ${CMAKE_CURRENT_SOURCE_DIR}/ports/unix/dummy.c
 ##extmod/modwebrepl.c
 #extmod/uos_dupterm.c
 #extmod/modframebuf.c
+extmod/rai/modrailib.c
 
-
-extmod/eoslib/modeoslib.c
 ports/unix/main_eos.c
 ports/unix/gccollect.c
 ports/unix/unix_mphal.c

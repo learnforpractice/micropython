@@ -101,8 +101,15 @@
 #ifndef MICROPY_PY_MATH_SPECIAL_FUNCTIONS
 #define MICROPY_PY_MATH_SPECIAL_FUNCTIONS (1)
 #endif
+#define MICROPY_PY_SYS              (0)
+#define MICROPY_PY_IO               (0)
+#define MICROPY_PY_IO_BYTESIO       (1)
+#define MICROPY_PY_IO_FILEIO        (0)
+#define MICROPY_PY_STRINGIO         (1)
+#define MICROPY_PY_EOSLIB           (0)
+
+
 #define MICROPY_PY_CMATH            (1)
-#define MICROPY_PY_IO_FILEIO        (1)
 #define MICROPY_PY_GC_COLLECT_RETVAL (1)
 #define MICROPY_MODULE_FROZEN_STR   (1)
 
@@ -129,7 +136,7 @@
 #define MICROPY_PY_UBINASCII_CRC32  (1)
 #define MICROPY_PY_URANDOM          (1)
 #ifndef MICROPY_PY_USELECT_POSIX
-#define MICROPY_PY_USELECT_POSIX    (1)
+#define MICROPY_PY_USELECT_POSIX    (0)
 #endif
 //#define MICROPY_PY_WEBSOCKET        (1)
 #define MICROPY_PY_MACHINE          (1)
@@ -284,8 +291,8 @@ void mp_unix_mark_exec(void);
 #endif
 #endif
 
-#define MICROPY_PORT_BUILTINS \
-    { MP_ROM_QSTR(MP_QSTR_open), MP_ROM_PTR(&mp_builtin_open_obj) },
+#define MICROPY_PORT_BUILTINS
+//    { MP_ROM_QSTR(MP_QSTR_open), MP_ROM_PTR(&mp_builtin_open_obj) },
 
 #define MP_STATE_PORT MP_STATE_VM
 

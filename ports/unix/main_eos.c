@@ -329,68 +329,6 @@ STATIC int usage(char **argv) {
     return 1;
 }
 
-// Process options which set interpreter init options
-STATIC void pre_process_options(int argc, char **argv) {
-    for (int a = 1; a < argc; a++) {
-        if (argv[a][0] == '-') {
-            if (strcmp(argv[a], "-X") == 0) {
-                if (a + 1 >= argc) {
-                    exit(usage(argv));
-                }
-                if (0) {
-                } else if (strcmp(argv[a + 1], "compile-only") == 0) {
-                    compile_only = true;
-                } else if (strcmp(argv[a + 1], "emit=bytecode") == 0) {
-                    emit_opt = MP_EMIT_OPT_BYTECODE;
-                } else if (strcmp(argv[a + 1], "emit=native") == 0) {
-                    emit_opt = MP_EMIT_OPT_NATIVE_PYTHON;
-                } else if (strcmp(argv[a + 1], "emit=viper") == 0) {
-                    emit_opt = MP_EMIT_OPT_VIPER;
-#if MICROPY_ENABLE_GC
-                } else if (strncmp(argv[a + 1], "heapsize=", sizeof("heapsize=") - 1) == 0) {
-                    char *end;
-                    heap_size = strtol(argv[a + 1] + sizeof("heapsize=") - 1, &end, 0);
-                    // Don't bring unneeded libc dependencies like tolower()
-                    // If there's 'w' immediately after number, adjust it for
-                    // target word size. Note that it should be *before* size
-                    // suffix like K or M, to avoid confusion with kilowords,
-                    // etc. the size is still in bytes, just can be adjusted
-                    // for word size (taking 32bit as baseline).
-                    bool word_adjust = false;
-                    if ((*end | 0x20) == 'w') {
-                        word_adjust = true;
-                        end++;
-                    }
-                    if ((*end | 0x20) == 'k') {
-                        heap_size *= 1024;
-                    } else if ((*end | 0x20) == 'm') {
-                        heap_size *= 1024 * 1024;
-                    } else {
-                        // Compensate for ++ below
-                        --end;
-                    }
-                    if (*++end != 0) {
-                        goto invalid_arg;
-                    }
-                    if (word_adjust) {
-                        heap_size = heap_size * BYTES_PER_WORD / 4;
-                    }
-                    // If requested size too small, we'll crash anyway
-                    if (heap_size < 700) {
-                        goto invalid_arg;
-                    }
-#endif
-                } else {
-invalid_arg:
-                    printf("Invalid option\n");
-                    exit(usage(argv));
-                }
-                a++;
-            }
-        }
-    }
-}
-
 STATIC void set_sys_argv(char *argv[], int argc, int start_arg) {
     for (int i = start_arg; i < argc; i++) {
         mp_obj_list_append(mp_sys_argv, MP_OBJ_NEW_QSTR(qstr_from_str(argv[i])));
@@ -440,8 +378,6 @@ MP_NOINLINE int main_(int argc, char **argv) {
     #endif
 
     mp_stack_set_limit(40000 * (BYTES_PER_WORD / 4));
-
-    pre_process_options(argc, argv);
 
 #if MICROPY_ENABLE_GC
     char *heap = malloc(heap_size);
@@ -669,4 +605,26 @@ uint mp_import_stat(const char *path) {
 void nlr_jump_fail(void *val) {
     printf("FATAL: uncaught NLR %p\n", val);
     exit(1);
+}
+
+void print_time()
+{
+   printf("now: %lu\n", mp_hal_ticks_us());
+}
+
+void* execute_from_str(const char *str) {
+    nlr_buf_t nlr;
+    printf("execute_from_str\n");
+    if (nlr_push(&nlr) == 0) {
+        mp_lexer_t *lex = mp_lexer_new_from_str_len(0/*MP_QSTR_*/, str, strlen(str), false);
+        mp_parse_tree_t pt = mp_parse(lex, MP_PARSE_FILE_INPUT);
+        mp_obj_t module_fun = mp_compile(&pt, lex->source_name, MP_EMIT_OPT_NONE, false);
+        mp_call_function_0(module_fun);
+        nlr_pop();
+        return 0;
+    } else {
+       mp_obj_print_exception(&mp_plat_print, MP_OBJ_FROM_PTR(nlr.ret_val));
+        // uncaught exception
+        return (mp_obj_t)nlr.ret_val;
+    }
 }

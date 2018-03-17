@@ -142,14 +142,27 @@ STATIC void do_load_from_lexer(mp_obj_t module_obj, mp_lexer_t *lex) {
 }
 void print_time();
 mp_obj_t micropy_load(const char *mod_name, const char *data, size_t len) {
-   qstr qstr_mod_name = qstr_from_str(mod_name);
-   print_time();
-   mp_lexer_t *lex = mp_lexer_new_from_str_len(qstr_mod_name, data, (mp_uint_t)len, 0);
-   print_time();
-   mp_obj_t module_obj = mp_obj_new_module(qstr_mod_name);
-   do_load_from_lexer(module_obj, lex);
-   print_time();
-   return module_obj;
+	nlr_buf_t nlr;
+	if (nlr_push(&nlr) == 0)
+	{
+		qstr qstr_mod_name = qstr_from_str(mod_name);
+	   print_time();
+	   mp_lexer_t *lex = mp_lexer_new_from_str_len(qstr_mod_name, data, (mp_uint_t)len, 0);
+	   print_time();
+	   mp_obj_t module_obj = mp_obj_new_module(qstr_mod_name);
+	   do_load_from_lexer(module_obj, lex);
+	   print_time();
+
+		nlr_pop();
+		return module_obj;
+	}
+	else
+	{
+		mp_obj_print_exception(&mp_plat_print, MP_OBJ_FROM_PTR(nlr.ret_val));
+		// uncaught exception
+		return (mp_obj_t)nlr.ret_val;
+	}
+
 }
 
 mp_obj_t micropy_call_0(mp_obj_t module_obj, const char *func) {
@@ -165,7 +178,11 @@ mp_obj_t micropy_call_2(mp_obj_t module_obj, const char *func, uint64_t code, ui
    return mp_call_function_2(py_func, arg0, arg1);
 }
 
-
+mp_obj_t micropy_call_1(mp_obj_t module_obj, const char* func, const char* _arg0) {
+   mp_obj_t py_func = mp_load_attr(module_obj, qstr_from_str(func));
+   mp_obj_t arg0 = mp_obj_new_str(_arg0, strnlen(_arg0,256));
+   return mp_call_function_1(py_func, arg0);
+}
 
 #endif
 

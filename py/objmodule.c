@@ -184,6 +184,9 @@ STATIC const mp_rom_map_elem_t mp_builtin_module_table[] = {
 #if MICROPY_PY_EOSLIB
     { MP_ROM_QSTR(MP_QSTR_eoslib), MP_ROM_PTR(&mp_module_eoslib) },
 #endif
+#if MICROPY_PY_RAILIB
+    { MP_ROM_QSTR(MP_QSTR_railib), MP_ROM_PTR(&mp_module_railib) },
+#endif
     #if MICROPY_PY_URE
     { MP_ROM_QSTR(MP_QSTR_ure), MP_ROM_PTR(&mp_module_ure) },
 #endif
