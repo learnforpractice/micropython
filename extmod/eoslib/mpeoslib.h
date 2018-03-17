@@ -33,38 +33,6 @@ mp_obj_t uint64_to_string_(uint64_t n);
 
 #define Name uint64_t
 
-int32_t store_(Name scope, Name table, void* keys, int keyslen, int key_type,
-               char* value, uint32_t valuelen);
-
-int32_t update_(Name scope, Name table, void* keys, int keyslen, int key_type,
-                char* value, uint32_t valuelen);
-
-int32_t remove_(Name scope, Name table, void* keys, int keyslen, int key_type,
-                char* value, uint32_t valuelen);
-
-int32_t load_(Name scope, Name code, Name table, void* keys, int keyslen, int key_type,
-              int scope_index, char* value, uint32_t valuelen);
-
-int32_t front_(Name scope, Name code, Name table, void* keys, int keyslen, int key_type,
-               int scope_index, char* value, uint32_t valuelen);
-
-int32_t back_(Name scope, Name code, Name table, void* keys, int keyslen, int key_type,
-              int scope_index, char* value, uint32_t valuelen);
-
-int32_t next_(Name scope, Name code, Name table, void* keys, int keyslen, int key_type,
-              int scope_index, char* value, uint32_t valuelen);
-
-int32_t previous_(Name scope, Name code, Name table, void* keys, int keyslen, int key_type,
-                  int scope_index, char* value, uint32_t valuelen);
-
-int32_t lower_bound_(Name scope, Name code, Name table, void* keys, int keyslen,
-                     int key_type, int scope_index, char* value,
-                     uint32_t valuelen);
-
-int32_t upper_bound_(Name scope, Name code, Name table, void* keys, int keyslen,
-                     int key_type, int scope_index, char* value,
-                     uint32_t valuelen);
-
 mp_obj_t pack_(const char* str, int nsize);
 mp_obj_t unpack_(const char* str, int nsize);
 
@@ -72,6 +40,43 @@ mp_obj_t unpack_(const char* str, int nsize);
 mp_obj_t get_account_balance_(Name account);
 uint64_t get_active_producers_();
 mp_obj_t  sha256_(const char* str, int nsize);
+
+
+int store_str_(uint64_t scope, uint64_t table, const char* key, uint32_t key_len, const char* data, size_t data_len);
+int update_str_(uint64_t scope, uint64_t table, const char* key, uint32_t key_len, const char* data, size_t data_len);
+int remove_str_(uint64_t scope, uint64_t table, const char* key, uint32_t key_len);
+
+int load_str_(uint64_t scope, uint64_t code, uint64_t table, char* key, size_t key_len, char* data, size_t data_len);
+int front_str_(uint64_t scope, uint64_t code, uint64_t table, const char* key, size_t key_len, char* data, size_t data_len);
+int back_str_(uint64_t scope, uint64_t code, uint64_t table, const char* key, size_t key_len, char* data, size_t data_len);
+int next_str_(uint64_t scope, uint64_t code, uint64_t table, const char* key, size_t key_len, char* data, size_t data_len);
+int previous_str_(uint64_t scope, uint64_t code, uint64_t table, const char* key, size_t key_len, char* data, size_t data_len);
+int lower_bound_str_(uint64_t scope, uint64_t code, uint64_t table, const char* key, size_t key_len, char* data, size_t data_len);
+int upper_bound_str_(uint64_t scope, uint64_t code, uint64_t table, const char* key, size_t key_len, char* data, size_t data_len);
+
+
+
+int read_transaction( char* data, size_t data_len );
+int transaction_size();
+int expiration();
+int tapos_block_num();
+int tapos_block_prefix();
+int get_action( uint32_t type, uint32_t index, char* buffer, size_t buffer_size );
+
+
+void require_auth(uint64_t account);
+void require_auth_ex(uint64_t account, uint64_t permission);
+void require_write_lock(uint64_t scope);
+void require_read_lock(uint64_t account, uint64_t scope);
+int is_account(uint64_t account);
+void require_recipient(uint64_t account);
+
+
+int read_action(char* memory, size_t size);
+int action_size();
+uint64_t current_receiver();
+uint64_t publication_time();
+uint64_t current_sender();
 
 #ifdef __cplusplus
    }
