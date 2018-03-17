@@ -828,7 +828,7 @@ typedef double mp_float_t;
 // Whether to support eval and exec functions
 // By default they are supported if the compiler is enabled
 #ifndef MICROPY_PY_BUILTINS_EVAL_EXEC
-#define MICROPY_PY_BUILTINS_EVAL_EXEC (MICROPY_ENABLE_COMPILER)
+#define MICROPY_PY_BUILTINS_EVAL_EXEC (0)
 #endif
 
 // Whether to support the Python 2 execfile function
