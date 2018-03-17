@@ -161,7 +161,6 @@ void gc_collect_regs_and_stack(void) {
 
 void gc_collect(void) {
     //gc_dump_info();
-
     gc_collect_start();
     gc_collect_regs_and_stack();
     #if MICROPY_PY_THREAD

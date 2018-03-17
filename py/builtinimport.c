@@ -281,11 +281,11 @@ mp_obj_t micropy_load_raw_code(const char *mod_name, const char *file_str) {
    qstr qstr_mod_name = qstr_from_str(mod_name);
    mp_obj_t module_obj = mp_obj_new_module(qstr_mod_name);
 
-   print_time();
+//   print_time();
    mp_raw_code_t *raw_code = mp_raw_code_load_file(file_str);
    printf("raw_code %llx\n", (uint64_t)raw_code);
    do_execute_raw_code(module_obj, raw_code);
-   print_time();
+//   print_time();
    return module_obj;
 }
 

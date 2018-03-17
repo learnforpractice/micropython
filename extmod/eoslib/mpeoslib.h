@@ -21,7 +21,7 @@
 #include "py/stream.h"
 
 
-uint32_t now_();
+uint32_t now();
 void require_auth_(uint64_t account);
 mp_obj_t read_message_();
 void require_scope_(uint64_t account);

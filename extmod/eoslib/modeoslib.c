@@ -100,7 +100,7 @@ DB_INDEX_METHOD_SEQ(tertiary_i64i64i64)
 
 
 STATIC mp_obj_t mod_eoslib_now(void) {
-   return mp_obj_new_int(now_());
+   return mp_obj_new_int(now());
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_0(mod_eoslib_now_obj, mod_eoslib_now);
 
@@ -342,6 +342,13 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_VAR(mod_eoslib_send_inline_obj, 3, mod_eoslib_sen
 
 STATIC const mp_rom_map_elem_t mp_module_eoslib_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR___name__), MP_ROM_QSTR(MP_QSTR_eoslib) },
+	 { MP_ROM_QSTR(MP_QSTR_now), MP_ROM_PTR(&mod_eoslib_now_obj) },
+	 { MP_ROM_QSTR(MP_QSTR_s2n), MP_ROM_PTR(&mod_eoslib_s2n_obj) },
+    { MP_ROM_QSTR(MP_QSTR_N), MP_ROM_PTR(&mod_eoslib_N_obj) },
+    { MP_ROM_QSTR(MP_QSTR_n2s), MP_ROM_PTR(&mod_eoslib_n2s_obj) },
+    { MP_ROM_QSTR(MP_QSTR_pack), MP_ROM_PTR(&mod_eoslib_pack_obj) },
+    { MP_ROM_QSTR(MP_QSTR_unpack), MP_ROM_PTR(&mod_eoslib_unpack_obj) },
+
 	 { MP_ROM_QSTR(MP_QSTR_read_action), MP_ROM_PTR(&mod_eoslib_read_action_obj) },
 	 { MP_ROM_QSTR(MP_QSTR_action_size), MP_ROM_PTR(&mod_eoslib_action_size_obj) },
 	 { MP_ROM_QSTR(MP_QSTR_current_receiver), MP_ROM_PTR(&mod_eoslib_current_receiver_obj) },
@@ -366,13 +373,6 @@ STATIC const mp_rom_map_elem_t mp_module_eoslib_globals_table[] = {
 	 { MP_ROM_QSTR(MP_QSTR_next_i64), MP_ROM_PTR(&mod_eoslib_next_i64_obj) },
 	 { MP_ROM_QSTR(MP_QSTR_lower_bound_i64), MP_ROM_PTR(&mod_eoslib_lower_bound_i64_obj) },
 	 { MP_ROM_QSTR(MP_QSTR_upper_bound_i64), MP_ROM_PTR(&mod_eoslib_upper_bound_i64_obj) },
-
-	 { MP_ROM_QSTR(MP_QSTR_now), MP_ROM_PTR(&mod_eoslib_now_obj) },
-	 { MP_ROM_QSTR(MP_QSTR_s2n), MP_ROM_PTR(&mod_eoslib_s2n_obj) },
-    { MP_ROM_QSTR(MP_QSTR_N), MP_ROM_PTR(&mod_eoslib_N_obj) },
-    { MP_ROM_QSTR(MP_QSTR_n2s), MP_ROM_PTR(&mod_eoslib_n2s_obj) },
-    { MP_ROM_QSTR(MP_QSTR_pack), MP_ROM_PTR(&mod_eoslib_pack_obj) },
-    { MP_ROM_QSTR(MP_QSTR_unpack), MP_ROM_PTR(&mod_eoslib_unpack_obj) },
 
     { MP_ROM_QSTR(MP_QSTR_store_str), MP_ROM_PTR(&mod_eoslib_store_str_obj) },
     { MP_ROM_QSTR(MP_QSTR_update_str), MP_ROM_PTR(&mod_eoslib_update_str_obj) },

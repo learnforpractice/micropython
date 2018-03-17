@@ -34,6 +34,7 @@
 #include "py/runtime.h"
 #include "py/bc0.h"
 #include "py/bc.h"
+#include <sys/time.h>
 
 static uint64_t MAX_EXECUTION_TIME = 200000LL;
 static uint64_t execution_start_time = 0;
