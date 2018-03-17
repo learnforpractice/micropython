@@ -140,18 +140,18 @@ STATIC void do_load_from_lexer(mp_obj_t module_obj, mp_lexer_t *lex) {
     mp_obj_dict_t *mod_globals = mp_obj_module_get_globals(module_obj);
     mp_parse_compile_execute(lex, MP_PARSE_FILE_INPUT, mod_globals, mod_globals);
 }
-void print_time();
+//void print_time();
 mp_obj_t micropy_load(const char *mod_name, const char *data, size_t len) {
 	nlr_buf_t nlr;
 	if (nlr_push(&nlr) == 0)
 	{
 		qstr qstr_mod_name = qstr_from_str(mod_name);
-	   print_time();
+//	   print_time();
 	   mp_lexer_t *lex = mp_lexer_new_from_str_len(qstr_mod_name, data, (mp_uint_t)len, 0);
-	   print_time();
+//	   print_time();
 	   mp_obj_t module_obj = mp_obj_new_module(qstr_mod_name);
 	   do_load_from_lexer(module_obj, lex);
-	   print_time();
+//	   print_time();
 
 		nlr_pop();
 		return module_obj;

@@ -1354,6 +1354,6 @@ typedef double mp_float_t;
 #define MICROPY_PY_EOSLIB (1)
 #endif
 
-#define MICROPY_PY_RAILIB (1)
+#define MICROPY_PY_RAILIB (0)
 
 #endif // MICROPY_INCLUDED_PY_MPCONFIG_H

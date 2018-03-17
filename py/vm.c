@@ -35,6 +35,30 @@
 #include "py/bc0.h"
 #include "py/bc.h"
 
+static uint64_t MAX_EXECUTION_TIME = 200000LL;
+static uint64_t execution_start_time = 0;
+
+uint64_t get_milliseconds() {
+   struct timeval  tv;
+   gettimeofday(&tv, NULL);
+   return tv.tv_sec * 1000000LL + tv.tv_usec * 1LL ;
+}
+
+void execution_start() {
+	execution_start_time = get_milliseconds();
+}
+
+void execution_end() {
+	execution_start_time = 0;
+}
+
+int is_execution_time_expire() {
+	if (execution_start_time) {
+		return (execution_start_time + MAX_EXECUTION_TIME) < get_milliseconds();
+	}
+	return 0;
+}
+
 #if 0
 #define TRACE(ip) printf("sp=%d ", (int)(sp - &code_state->state[0] + 1)); mp_bytecode_print2(ip, 1, code_state->fun_bc->const_table);
 #else
@@ -118,7 +142,7 @@ typedef enum {
     exc_sp--; /* pop back to previous exception handler */ \
     CLEAR_SYS_EXC_INFO() /* just clear sys.exc_info(), not compliant, but it shouldn't be used in 1st place */
 
-int is_execution_time_expire();
+
 // fastn has items in reverse order (fastn[0] is local[0], fastn[-1] is local[1], etc)
 // sp points to bottom of stack which grows up
 // returns:
