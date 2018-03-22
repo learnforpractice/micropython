@@ -54,17 +54,17 @@ uint64_t get_active_producers_();
 mp_obj_t  sha256_(const char* str, int nsize);
 
 
-int store_str_(uint64_t scope, uint64_t table, const char* key, uint32_t key_len, const char* data, size_t data_len);
-int update_str_(uint64_t scope, uint64_t table, const char* key, uint32_t key_len, const char* data, size_t data_len);
-int remove_str_(uint64_t scope, uint64_t table, const char* key, uint32_t key_len);
+int store_str(uint64_t scope, uint64_t table, const char* key, uint32_t key_len, const char* data, size_t data_len);
+int update_str(uint64_t scope, uint64_t table, const char* key, uint32_t key_len, const char* data, size_t data_len);
+int remove_str(uint64_t scope, uint64_t table, const char* key, uint32_t key_len);
 
-int load_str_(uint64_t scope, uint64_t code, uint64_t table, char* key, size_t key_len, char* data, size_t data_len);
-int front_str_(uint64_t scope, uint64_t code, uint64_t table, const char* key, size_t key_len, char* data, size_t data_len);
-int back_str_(uint64_t scope, uint64_t code, uint64_t table, const char* key, size_t key_len, char* data, size_t data_len);
-int next_str_(uint64_t scope, uint64_t code, uint64_t table, const char* key, size_t key_len, char* data, size_t data_len);
-int previous_str_(uint64_t scope, uint64_t code, uint64_t table, const char* key, size_t key_len, char* data, size_t data_len);
-int lower_bound_str_(uint64_t scope, uint64_t code, uint64_t table, const char* key, size_t key_len, char* data, size_t data_len);
-int upper_bound_str_(uint64_t scope, uint64_t code, uint64_t table, const char* key, size_t key_len, char* data, size_t data_len);
+int load_str(uint64_t scope, uint64_t code, uint64_t table, const char* key, size_t key_len, char* data, size_t data_len);
+int front_str(uint64_t scope, uint64_t code, uint64_t table, const char* key, size_t key_len, char* data, size_t data_len);
+int back_str(uint64_t scope, uint64_t code, uint64_t table, const char* key, size_t key_len, char* data, size_t data_len);
+int next_str(uint64_t scope, uint64_t code, uint64_t table, const char* key, size_t key_len, char* data, size_t data_len);
+int previous_str(uint64_t scope, uint64_t code, uint64_t table, const char* key, size_t key_len, char* data, size_t data_len);
+int lower_bound_str(uint64_t scope, uint64_t code, uint64_t table, const char* key, size_t key_len, char* data, size_t data_len);
+int upper_bound_str(uint64_t scope, uint64_t code, uint64_t table, const char* key, size_t key_len, char* data, size_t data_len);
 
 
 

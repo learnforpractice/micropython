@@ -302,7 +302,7 @@ STATIC mp_obj_t mod_eoslib_##name##_str(size_t n_args, const mp_obj_t *args) { \
    uint64_t table = mp_obj_uint_get_checked(args[1]); \
    void* keys = (void *)mp_obj_str_get_data(args[2], &keys_len); \
    void* value = (void *)mp_obj_str_get_data(args[3], &value_len); \
-   int ret = name##_str_(scope, table, keys, keys_len, value, value_len); \
+   int ret = name##_str(scope, table, keys, keys_len, value, value_len); \
    return mp_obj_new_int(ret); \
 } \
 STATIC MP_DEFINE_CONST_FUN_OBJ_VAR(mod_eoslib_##name##_str##_obj, 4, mod_eoslib_##name##_str);
@@ -315,7 +315,7 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_VAR(mod_eoslib_##name##_str##_obj, 4, mod_eoslib_
       uint64_t code = mp_obj_uint_get_checked(args[1]); \
       uint64_t table = mp_obj_uint_get_checked(args[2]); \
       void* keys = (void *)mp_obj_str_get_data(args[3], &keys_len); \
-      int ret = name##_str_(scope, code, table, keys, keys_len,value, sizeof(value)); \
+      int ret = name##_str(scope, code, table, keys, keys_len,value, sizeof(value)); \
       if (ret > 0) { \
          return mp_obj_new_str(value, ret); \
       } else { \
@@ -332,7 +332,7 @@ STATIC mp_obj_t mod_eoslib_remove_str(size_t n_args, const mp_obj_t *args) {
    uint64_t scope = mp_obj_uint_get_checked(args[0]);
    uint64_t table = mp_obj_uint_get_checked(args[1]);
    void* keys = (void *)mp_obj_str_get_data(args[2], &keys_len);
-   int ret = remove_str_(scope, table, keys, keys_len);
+   int ret = remove_str(scope, table, keys, keys_len);
    return mp_obj_new_int(ret);
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_VAR(mod_eoslib_remove_str_obj, 3, mod_eoslib_remove_str);
