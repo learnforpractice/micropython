@@ -1,10 +1,11 @@
 file(GLOB HEADERS "py/*.h")
 
 add_custom_command(
-    OUTPUT ${CMAKE_CURRENT_SOURCE_DIR}/ports/unix/dummy.c
+    OUTPUT ${CMAKE_CURRENT_SOURCE_DIR}/ports/unix/build/frozen.c ${CMAKE_CURRENT_SOURCE_DIR}/ports/unix/build/genhdr/qstrdefs.collected.h
+
     COMMAND make axtls
     COMMAND make lib
-    COMMAND touch ${CMAKE_CURRENT_SOURCE_DIR}/ports/unix/dummy.c
+    COMMAND touch ${CMAKE_CURRENT_SOURCE_DIR}/ports/unix/build/frozen.c
     WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/ports/unix
     COMMENT "build micropython"
     DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/extmod/eoslib/modeoslib.c ${CMAKE_CURRENT_SOURCE_DIR}/extmod/eoslib/mpeoslib.h
@@ -12,7 +13,7 @@ add_custom_command(
 
 add_library( micropython
              STATIC
-${CMAKE_CURRENT_SOURCE_DIR}/ports/unix/dummy.c
+${CMAKE_CURRENT_SOURCE_DIR}/ports/unix/build/frozen.c
 #ports/unix/build/py/emitnx64.o
 #ports/unix/mpthreadport.c
 #ports/unix/alloc.c
