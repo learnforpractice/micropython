@@ -6,7 +6,7 @@ add_custom_command(
     COMMAND make lib
     COMMAND touch ${CMAKE_CURRENT_SOURCE_DIR}/ports/unix/dummy.c
     WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/ports/unix
-    COMMENT "build micropython python"
+    COMMENT "build micropython"
     DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/extmod/eoslib/modeoslib.c ${CMAKE_CURRENT_SOURCE_DIR}/extmod/eoslib/mpeoslib.h
 )
 
