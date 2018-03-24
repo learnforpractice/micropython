@@ -22,7 +22,7 @@
 
 
 uint32_t now();
-void abort_();
+void eosio_abort();
 void eosio_assert(int condition, const char* str);
 //class crypto_api
 void assert_recover_key( const char* data, size_t data_len,
