@@ -31,7 +31,7 @@
 #include "py/runtime.h"
 #include "py/builtin.h"
 
-#if MICROPY_PY_BUILTINS_COMPILE
+#if 0 //MICROPY_PY_BUILTINS_COMPILE
 
 typedef struct _mp_obj_code_t {
     mp_obj_base_t base;
