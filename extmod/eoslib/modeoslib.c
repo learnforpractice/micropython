@@ -191,7 +191,6 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_VAR(mod_eoslib_db_previous_i64_obj, 1, mod_eoslib
 
 
 STATIC mp_obj_t mod_eoslib_db_find_i64(size_t n_args, const mp_obj_t *args) {
-   uint64_t primary = 0;
    uint64_t code = mp_obj_uint_get_checked(args[0]);
    uint64_t scope = mp_obj_uint_get_checked(args[1]);
    uint64_t table = mp_obj_uint_get_checked(args[2]);
@@ -203,7 +202,6 @@ STATIC mp_obj_t mod_eoslib_db_find_i64(size_t n_args, const mp_obj_t *args) {
 STATIC MP_DEFINE_CONST_FUN_OBJ_VAR(mod_eoslib_db_find_i64_obj, 4, mod_eoslib_db_find_i64);
 
 STATIC mp_obj_t mod_eoslib_db_lowerbound_i64(size_t n_args, const mp_obj_t *args) {
-   uint64_t primary = 0;
    uint64_t code = mp_obj_uint_get_checked(args[0]);
    uint64_t scope = mp_obj_uint_get_checked(args[1]);
    uint64_t table = mp_obj_uint_get_checked(args[2]);
@@ -216,7 +214,6 @@ STATIC mp_obj_t mod_eoslib_db_lowerbound_i64(size_t n_args, const mp_obj_t *args
 STATIC MP_DEFINE_CONST_FUN_OBJ_VAR(mod_eoslib_db_lowerbound_i64_obj, 4, mod_eoslib_db_lowerbound_i64);
 
 STATIC mp_obj_t mod_eoslib_db_upperbound_i64(size_t n_args, const mp_obj_t *args) {
-   uint64_t primary = 0;
    uint64_t code = mp_obj_uint_get_checked(args[0]);
    uint64_t scope = mp_obj_uint_get_checked(args[1]);
    uint64_t table = mp_obj_uint_get_checked(args[2]);
@@ -228,7 +225,6 @@ STATIC mp_obj_t mod_eoslib_db_upperbound_i64(size_t n_args, const mp_obj_t *args
 STATIC MP_DEFINE_CONST_FUN_OBJ_VAR(mod_eoslib_db_upperbound_i64_obj, 4, mod_eoslib_db_upperbound_i64);
 
 STATIC mp_obj_t mod_eoslib_db_end_i64(size_t n_args, const mp_obj_t *args) {
-   uint64_t primary = 0;
    uint64_t code = mp_obj_uint_get_checked(args[0]);
    uint64_t scope = mp_obj_uint_get_checked(args[1]);
    uint64_t table = mp_obj_uint_get_checked(args[2]);
