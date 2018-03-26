@@ -22,7 +22,7 @@
 
 
 uint32_t now();
-void eosio_abort();
+void abort_();
 void eosio_assert(int condition, const char* str);
 //class crypto_api
 void assert_recover_key( const char* data, size_t data_len,
@@ -53,21 +53,6 @@ mp_obj_t get_account_balance_(Name account);
 uint64_t get_active_producers_();
 mp_obj_t  sha256_(const char* str, int nsize);
 
-
-int store_str(uint64_t scope, uint64_t table, const char* key, uint32_t key_len, const char* data, size_t data_len);
-int update_str(uint64_t scope, uint64_t table, const char* key, uint32_t key_len, const char* data, size_t data_len);
-int remove_str(uint64_t scope, uint64_t table, const char* key, uint32_t key_len);
-
-int load_str(uint64_t scope, uint64_t code, uint64_t table, const char* key, size_t key_len, char* data, size_t data_len);
-int front_str(uint64_t scope, uint64_t code, uint64_t table, const char* key, size_t key_len, char* data, size_t data_len);
-int back_str(uint64_t scope, uint64_t code, uint64_t table, const char* key, size_t key_len, char* data, size_t data_len);
-int next_str(uint64_t scope, uint64_t code, uint64_t table, const char* key, size_t key_len, char* data, size_t data_len);
-int previous_str(uint64_t scope, uint64_t code, uint64_t table, const char* key, size_t key_len, char* data, size_t data_len);
-int lower_bound_str(uint64_t scope, uint64_t code, uint64_t table, const char* key, size_t key_len, char* data, size_t data_len);
-int upper_bound_str(uint64_t scope, uint64_t code, uint64_t table, const char* key, size_t key_len, char* data, size_t data_len);
-
-
-
 int read_transaction( char* data, size_t data_len );
 int transaction_size();
 int expiration();
@@ -89,6 +74,20 @@ int action_size();
 uint64_t current_receiver();
 uint64_t publication_time();
 uint64_t current_sender();
+
+
+
+int db_store_i64( uint64_t scope, uint64_t table, uint64_t payer, uint64_t id, const char* buffer, size_t buffer_size );
+void db_update_i64( int itr, uint64_t payer, const char* buffer, size_t buffer_size );
+void db_remove_i64( int itr );
+int db_get_i64( int itr, char* buffer, size_t buffer_size );
+int db_next_i64( int itr, uint64_t* primary );
+int db_previous_i64( int itr, uint64_t* primary );
+int db_find_i64( uint64_t code, uint64_t scope, uint64_t table, uint64_t id );
+int db_lowerbound_i64( uint64_t code, uint64_t scope, uint64_t table, uint64_t id );
+int db_upperbound_i64( uint64_t code, uint64_t scope, uint64_t table, uint64_t id );
+int db_end_i64( uint64_t code, uint64_t scope, uint64_t table );
+
 
 #ifdef __cplusplus
    }
