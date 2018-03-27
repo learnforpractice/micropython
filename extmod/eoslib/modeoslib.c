@@ -1,7 +1,13 @@
-#include "mpeoslib.h"
+#include "../../../chain/micropython/mpeoslib.h"
+
 #include <stdlib.h>
 
 #if MICROPY_PY_EOSLIB
+static struct eosapi s_eosapi;
+
+void register_eosapi(struct eosapi * api) {
+	s_eosapi = *api;
+}
 
 mp_uint_t mp_obj_uint_get_checked(mp_const_obj_t self_in);
 
