@@ -39,14 +39,14 @@
 static uint64_t MAX_EXECUTION_TIME = 200000LL;
 static uint64_t execution_start_time = 0;
 
-uint64_t get_milliseconds() {
+uint64_t get_microseconds() {
    struct timeval  tv;
    gettimeofday(&tv, NULL);
    return tv.tv_sec * 1000000LL + tv.tv_usec * 1LL ;
 }
 
 void execution_start() {
-	execution_start_time = get_milliseconds();
+	execution_start_time = get_microseconds();
 }
 
 void execution_end() {
@@ -55,7 +55,7 @@ void execution_end() {
 
 int is_execution_time_expire() {
 	if (execution_start_time) {
-		return (execution_start_time + MAX_EXECUTION_TIME) < get_milliseconds();
+		return (execution_start_time + MAX_EXECUTION_TIME) < get_microseconds();
 	}
 	return 0;
 }

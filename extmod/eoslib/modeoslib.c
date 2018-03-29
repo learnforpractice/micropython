@@ -9,7 +9,7 @@ void register_eosapi(struct eosapi * api) {
 	s_eosapi = *api;
 }
 
-mp_uint_t mp_obj_uint_get_checked(mp_const_obj_t self_in);
+mp_uint_t mp_obj_get_uint(mp_const_obj_t self_in);
 
 STATIC mp_obj_t mod_eoslib_now(void) {
    return mp_obj_new_int(now());
@@ -113,7 +113,7 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_1(mod_eoslib_N_obj, mod_eoslib_N);
 
 
 STATIC mp_obj_t mod_eoslib_n2s(mp_obj_t obj) {
-   uint64_t n = mp_obj_uint_get_checked(obj);
+   uint64_t n = mp_obj_get_uint(obj);
    return uint64_to_string_(n);
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(mod_eoslib_n2s_obj, mod_eoslib_n2s);
@@ -135,10 +135,10 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_1(mod_eoslib_unpack_obj, mod_eoslib_unpack);
 //db i64
 STATIC mp_obj_t mod_eoslib_db_store_i64(size_t n_args, const mp_obj_t *args) {
    size_t value_len = 0;
-   uint64_t scope = mp_obj_uint_get_checked(args[0]);
-   uint64_t table = mp_obj_uint_get_checked(args[1]);
-   uint64_t payer = mp_obj_uint_get_checked(args[2]);
-   uint64_t id = mp_obj_uint_get_checked(args[3]);
+   uint64_t scope = mp_obj_get_uint(args[0]);
+   uint64_t table = mp_obj_get_uint(args[1]);
+   uint64_t payer = mp_obj_get_uint(args[2]);
+   uint64_t id = mp_obj_get_uint(args[3]);
    void* value = (void *)mp_obj_str_get_data(args[4], &value_len);
    int itr = db_store_i64(scope, table, payer, id, value, value_len);
    return mp_obj_new_int(itr);
@@ -147,33 +147,35 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_VAR(mod_eoslib_db_store_i64_obj, 5, mod_eoslib_db
 
 STATIC mp_obj_t mod_eoslib_db_update_i64(size_t n_args, const mp_obj_t *args) {
    size_t value_len = 0;
-   uint64_t itr = mp_obj_uint_get_checked(args[0]);
-   uint64_t payer = mp_obj_uint_get_checked(args[1]);
+   uint64_t itr = mp_obj_get_uint(args[0]);
+   uint64_t payer = mp_obj_get_uint(args[1]);
    void* value = (void *)mp_obj_str_get_data(args[2], &value_len);
    db_update_i64(itr, payer, value, value_len);
    return mp_const_none;
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_VAR(mod_eoslib_db_update_i64_obj, 5, mod_eoslib_db_update_i64);
+STATIC MP_DEFINE_CONST_FUN_OBJ_VAR(mod_eoslib_db_update_i64_obj, 3, mod_eoslib_db_update_i64);
 
 STATIC mp_obj_t mod_eoslib_db_remove_i64(size_t n_args, const mp_obj_t *args) {
-   uint64_t itr = mp_obj_uint_get_checked(args[0]);
+   uint64_t itr = mp_obj_get_uint(args[0]);
    db_remove_i64(itr);
    return mp_const_none;
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_VAR(mod_eoslib_db_remove_i64_obj, 1, mod_eoslib_db_remove_i64);
 
 STATIC mp_obj_t mod_eoslib_db_get_i64(size_t n_args, const mp_obj_t *args) {
-   size_t value_len = 0;
-   uint64_t itr = mp_obj_uint_get_checked(args[0]);
-   void* value = (void *)mp_obj_str_get_data(args[1], &value_len);
-   int size = db_get_i64(itr, value, value_len);
-   return mp_obj_new_int(size);
+   char value[256];
+   uint64_t itr = mp_obj_get_uint(args[0]);
+   int size = db_get_i64(itr, value, sizeof(value));
+   if (size <= 0) {
+		return mp_const_none;
+   }
+   return mp_obj_new_str(value, size);
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_VAR(mod_eoslib_db_get_i64_obj, 2, mod_eoslib_db_get_i64);
+STATIC MP_DEFINE_CONST_FUN_OBJ_VAR(mod_eoslib_db_get_i64_obj, 1, mod_eoslib_db_get_i64);
 
 STATIC mp_obj_t mod_eoslib_db_next_i64(size_t n_args, const mp_obj_t *args) {
    uint64_t primary = 0;
-   uint64_t itr = mp_obj_uint_get_checked(args[0]);
+   uint64_t itr = mp_obj_get_uint(args[0]);
    int itr_next = db_next_i64(itr, &primary);
 
    mp_obj_tuple_t *tuple = mp_obj_new_tuple(2, NULL);
@@ -185,7 +187,7 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_VAR(mod_eoslib_db_next_i64_obj, 1, mod_eoslib_db_
 
 STATIC mp_obj_t mod_eoslib_db_previous_i64(size_t n_args, const mp_obj_t *args) {
    uint64_t primary = 0;
-   uint64_t itr = mp_obj_uint_get_checked(args[0]);
+   uint64_t itr = mp_obj_get_uint(args[0]);
    int itr_pre = db_previous_i64(itr, &primary);
 
    mp_obj_tuple_t *tuple = mp_obj_new_tuple(2, NULL);
@@ -197,10 +199,10 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_VAR(mod_eoslib_db_previous_i64_obj, 1, mod_eoslib
 
 
 STATIC mp_obj_t mod_eoslib_db_find_i64(size_t n_args, const mp_obj_t *args) {
-   uint64_t code = mp_obj_uint_get_checked(args[0]);
-   uint64_t scope = mp_obj_uint_get_checked(args[1]);
-   uint64_t table = mp_obj_uint_get_checked(args[2]);
-   uint64_t id = mp_obj_uint_get_checked(args[3]);
+   uint64_t code = mp_obj_get_uint(args[0]);
+   uint64_t scope = mp_obj_get_uint(args[1]);
+   uint64_t table = mp_obj_get_uint(args[2]);
+   uint64_t id = mp_obj_get_uint(args[3]);
 
    int itr = db_find_i64(code, scope, table, id);
    return mp_obj_new_int(itr);
@@ -208,11 +210,10 @@ STATIC mp_obj_t mod_eoslib_db_find_i64(size_t n_args, const mp_obj_t *args) {
 STATIC MP_DEFINE_CONST_FUN_OBJ_VAR(mod_eoslib_db_find_i64_obj, 4, mod_eoslib_db_find_i64);
 
 STATIC mp_obj_t mod_eoslib_db_lowerbound_i64(size_t n_args, const mp_obj_t *args) {
-   uint64_t code = mp_obj_uint_get_checked(args[0]);
-   uint64_t scope = mp_obj_uint_get_checked(args[1]);
-   uint64_t table = mp_obj_uint_get_checked(args[2]);
-   uint64_t id = mp_obj_uint_get_checked(args[3]);
-
+   uint64_t code = mp_obj_get_uint(args[0]);
+   uint64_t scope = mp_obj_get_uint(args[1]);
+   uint64_t table = mp_obj_get_uint(args[2]);
+   uint64_t id = mp_obj_get_uint(args[3]);
    int itr = db_lowerbound_i64(code, scope, table, id);
 
    return mp_obj_new_int(itr);
@@ -220,10 +221,10 @@ STATIC mp_obj_t mod_eoslib_db_lowerbound_i64(size_t n_args, const mp_obj_t *args
 STATIC MP_DEFINE_CONST_FUN_OBJ_VAR(mod_eoslib_db_lowerbound_i64_obj, 4, mod_eoslib_db_lowerbound_i64);
 
 STATIC mp_obj_t mod_eoslib_db_upperbound_i64(size_t n_args, const mp_obj_t *args) {
-   uint64_t code = mp_obj_uint_get_checked(args[0]);
-   uint64_t scope = mp_obj_uint_get_checked(args[1]);
-   uint64_t table = mp_obj_uint_get_checked(args[2]);
-   uint64_t id = mp_obj_uint_get_checked(args[3]);
+   uint64_t code = mp_obj_get_uint(args[0]);
+   uint64_t scope = mp_obj_get_uint(args[1]);
+   uint64_t table = mp_obj_get_uint(args[2]);
+   uint64_t id = mp_obj_get_uint(args[3]);
 
    int itr = db_upperbound_i64(code, scope, table, id);
    return mp_obj_new_int(itr);
@@ -231,9 +232,9 @@ STATIC mp_obj_t mod_eoslib_db_upperbound_i64(size_t n_args, const mp_obj_t *args
 STATIC MP_DEFINE_CONST_FUN_OBJ_VAR(mod_eoslib_db_upperbound_i64_obj, 4, mod_eoslib_db_upperbound_i64);
 
 STATIC mp_obj_t mod_eoslib_db_end_i64(size_t n_args, const mp_obj_t *args) {
-   uint64_t code = mp_obj_uint_get_checked(args[0]);
-   uint64_t scope = mp_obj_uint_get_checked(args[1]);
-   uint64_t table = mp_obj_uint_get_checked(args[2]);
+   uint64_t code = mp_obj_get_uint(args[0]);
+   uint64_t scope = mp_obj_get_uint(args[1]);
+   uint64_t table = mp_obj_get_uint(args[2]);
 
    int itr = db_end_i64(code, scope, table);
    return mp_obj_new_int(itr);
@@ -270,7 +271,7 @@ METHOD0(current_sender)
 
 #define METHOD1(NAME) \
 STATIC mp_obj_t mod_eoslib_##NAME(mp_obj_t obj1) { \
-   uint64_t arg1 = mp_obj_uint_get_checked(obj1); \
+   uint64_t arg1 = mp_obj_get_uint(obj1); \
    NAME(arg1); \
    return mp_const_none; \
 } \
@@ -279,8 +280,8 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_1(mod_eoslib_##NAME##_obj, mod_eoslib_##NAME);
 
 #define METHOD2(NAME) \
 STATIC mp_obj_t mod_eoslib_##NAME(mp_obj_t obj1, mp_obj_t obj2) { \
-   uint64_t arg1 = mp_obj_uint_get_checked(obj1); \
-   uint64_t arg2 = mp_obj_uint_get_checked(obj2); \
+   uint64_t arg1 = mp_obj_get_uint(obj1); \
+   uint64_t arg2 = mp_obj_get_uint(obj2); \
    NAME(arg1,arg2); \
    return mp_const_none; \
 } \
@@ -293,7 +294,7 @@ METHOD2(require_read_lock)
 METHOD1(require_recipient)
 
 STATIC mp_obj_t mod_eoslib_is_account(mp_obj_t obj1) {
-   uint64_t arg1 = mp_obj_uint_get_checked(obj1);
+   uint64_t arg1 = mp_obj_get_uint(obj1);
    is_account(arg1);
    return mp_const_none;
 }
