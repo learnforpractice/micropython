@@ -1,6 +1,6 @@
-#include "../../../chain/micropython/mpeoslib.h"
-
 #include <stdlib.h>
+#include "../../../chain/micropython/mpeoslib.h"
+#include "xxhash.h"
 
 #if MICROPY_PY_EOSLIB
 static struct eosapi s_eosapi;
@@ -24,7 +24,7 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_0(mod_eoslib_abort_obj, mod_eoslib_abort);
 
 STATIC mp_obj_t mod_eoslib_eosio_assert(mp_obj_t obj1, mp_obj_t obj2) {
 	size_t len;
-	int condition = mp_obj_int_get_checked(obj1);
+	int condition = mp_obj_get_int(obj1);
    const char* str = mp_obj_str_get_data(obj2, &len);
    eosio_assert(condition, str);
 	return mp_const_none;
@@ -300,6 +300,29 @@ STATIC mp_obj_t mod_eoslib_is_account(mp_obj_t obj1) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(mod_eoslib_is_account_obj, mod_eoslib_is_account);
 
+STATIC mp_obj_t mod_eoslib_hash(mp_obj_t obj1) {
+	uint64_t key = 0;
+	if (MP_OBJ_IS_STR(obj1)) {
+		size_t len;
+		int i;
+	   const char* str = mp_obj_str_get_data(obj1, &len);
+
+	   key = XXH64(str, len, 0);
+
+	   /*
+	   for (int i=0;i<len;i++) {
+	   		((char*)(&key))[i] = str[i];
+	   }
+	   */
+	   return mp_obj_new_int_from_ull(key);
+	} else if (MP_OBJ_IS_INT(obj1)) {
+		return obj1;
+	} else {
+		mp_raise_TypeError("can't hash unsupported type");
+	}
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_1(mod_eoslib_hash_obj, mod_eoslib_hash);
+
 
 
 #if 0
@@ -367,7 +390,7 @@ STATIC const mp_rom_map_elem_t mp_module_eoslib_globals_table[] = {
 	 { MP_ROM_QSTR(MP_QSTR_db_lowerbound_i64), MP_ROM_PTR(&mod_eoslib_db_lowerbound_i64_obj) },
 	 { MP_ROM_QSTR(MP_QSTR_db_upperbound_i64), MP_ROM_PTR(&mod_eoslib_db_upperbound_i64_obj) },
 	 { MP_ROM_QSTR(MP_QSTR_db_end_i64), MP_ROM_PTR(&mod_eoslib_db_end_i64_obj) },
-
+	 { MP_ROM_QSTR(MP_QSTR_hash), MP_ROM_PTR(&mod_eoslib_hash_obj) },
 };
 
 STATIC MP_DEFINE_CONST_DICT(mp_module_eoslib_globals, mp_module_eoslib_globals_table);

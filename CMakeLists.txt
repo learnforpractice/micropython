@@ -49,7 +49,7 @@ ${CMAKE_CURRENT_SOURCE_DIR}/ports/unix/build/frozen.c
 #extmod/rai/modrailib.c
 
 extmod/eoslib/modeoslib.c
-
+extmod/crypto-algorithms/xxhash.c
 ports/unix/main_eos.c
 ports/unix/gccollect.c
 ports/unix/unix_mphal.c
@@ -178,6 +178,7 @@ endif()
 target_include_directories( micropython
                             PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/py
                             PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/extmod
+                            PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/extmod/crypto-algorithms
                             PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/ports/unix
                             PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/ports/unix/build
                             PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}
