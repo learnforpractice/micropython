@@ -14,6 +14,8 @@ add_custom_command(
 add_library( micropython
              STATIC
 ${CMAKE_CURRENT_SOURCE_DIR}/ports/unix/build/frozen.c
+${CMAKE_CURRENT_SOURCE_DIR}/ports/unix/build/frozen_mpy.c
+
 #ports/unix/build/py/emitnx64.o
 #ports/unix/mpthreadport.c
 #ports/unix/alloc.c
