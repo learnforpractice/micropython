@@ -109,6 +109,8 @@
 #define MICROPY_PY_EOSLIB           (1)
 #define MICROPY_MODULE_FROZEN_STR (1)
 #define MICROPY_MODULE_FROZEN_MPY (1)
+#define MICROPY_DEBUG_VERBOSE		(0)
+
 
 #define MICROPY_PY_CMATH            (1)
 #define MICROPY_PY_GC_COLLECT_RETVAL (1)

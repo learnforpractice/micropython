@@ -257,7 +257,7 @@ STATIC mp_obj_t fun_bc_call(mp_obj_t self_in, size_t n_args, size_t n_kw, const 
     DEBUG_printf("Input kw args: ");
     dump_args(args + n_args, n_kw * 2);
     mp_obj_fun_bc_t *self = MP_OBJ_TO_PTR(self_in);
-    DEBUG_printf("Func n_def_args: %d\n", self->n_def_args);
+//    DEBUG_printf("Func n_def_args: %d\n", self->n_def_args);
 
     size_t n_state, state_size;
     DECODE_CODESTATE_SIZE(self->bytecode, n_state, state_size);
