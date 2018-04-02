@@ -348,6 +348,9 @@ mp_obj_t micropy_load_raw_code(const char *mod_name, const char *file_str);
 int main_micropython(int argc, char **argv) {
     int ret;
     mp_obj_t module_obj;
+
+    assert(sizeof(long long) == 8);
+
     #if MICROPY_PY_THREAD
     mp_thread_init();
     #endif

@@ -99,7 +99,7 @@ STATIC mp_obj_t mod_eoslib_s2n(mp_obj_t obj) {
    size_t len;
    const char *account = mp_obj_str_get_data(obj, &len);
    uint64_t n = string_to_uint64_(account);
-   return mp_obj_new_int_from_ull(n);
+   return mp_obj_new_int_from_ll(n);
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(mod_eoslib_s2n_obj, mod_eoslib_s2n);
 
@@ -107,7 +107,7 @@ STATIC mp_obj_t mod_eoslib_N(mp_obj_t obj) {
    size_t len;
    const char *account = mp_obj_str_get_data(obj, &len);
    uint64_t n = string_to_uint64_(account);
-   return mp_obj_new_int_from_ull(n);
+   return mp_obj_new_int_from_ll(n);
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(mod_eoslib_N_obj, mod_eoslib_N);
 
@@ -306,7 +306,7 @@ STATIC mp_obj_t mod_eoslib_hash64(mp_obj_t obj1) {
 		size_t len;
 	   const char* str = mp_obj_str_get_data(obj1, &len);
 	   key = XXH64(str, len, 0);
-	   return mp_obj_new_int_from_ull(key);
+	   return mp_obj_new_int_from_ll(key);
 	} else if (MP_OBJ_IS_INT(obj1)) {
 		return obj1;
 	} else {
