@@ -300,7 +300,7 @@ STATIC mp_obj_t mod_eoslib_is_account(mp_obj_t obj1) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(mod_eoslib_is_account_obj, mod_eoslib_is_account);
 
-STATIC mp_obj_t mod_eoslib_hash(mp_obj_t obj1) {
+STATIC mp_obj_t mod_eoslib_hash64(mp_obj_t obj1) {
 	uint64_t key = 0;
 	if (MP_OBJ_IS_STR(obj1)) {
 		size_t len;
@@ -321,7 +321,7 @@ STATIC mp_obj_t mod_eoslib_hash(mp_obj_t obj1) {
 		mp_raise_TypeError("can't hash unsupported type");
 	}
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_1(mod_eoslib_hash_obj, mod_eoslib_hash);
+STATIC MP_DEFINE_CONST_FUN_OBJ_1(mod_eoslib_hash64_obj, mod_eoslib_hash64);
 
 
 
@@ -390,7 +390,7 @@ STATIC const mp_rom_map_elem_t mp_module_eoslib_globals_table[] = {
 	 { MP_ROM_QSTR(MP_QSTR_db_lowerbound_i64), MP_ROM_PTR(&mod_eoslib_db_lowerbound_i64_obj) },
 	 { MP_ROM_QSTR(MP_QSTR_db_upperbound_i64), MP_ROM_PTR(&mod_eoslib_db_upperbound_i64_obj) },
 	 { MP_ROM_QSTR(MP_QSTR_db_end_i64), MP_ROM_PTR(&mod_eoslib_db_end_i64_obj) },
-	 { MP_ROM_QSTR(MP_QSTR_hash), MP_ROM_PTR(&mod_eoslib_hash_obj) },
+	 { MP_ROM_QSTR(MP_QSTR_hash64), MP_ROM_PTR(&mod_eoslib_hash64_obj) },
 };
 
 STATIC MP_DEFINE_CONST_DICT(mp_module_eoslib_globals, mp_module_eoslib_globals_table);
