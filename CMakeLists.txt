@@ -103,7 +103,8 @@ ports/unix/moduselect.c
     py/objgenerator.c
     py/objgetitemiter.c
     py/objint.c
-    py/objint_mpz.c
+#    py/objint_mpz.c
+    py/objint_longlong.c
     py/objlist.c
     py/objmap.c
     py/objmodule.c

@@ -304,16 +304,8 @@ STATIC mp_obj_t mod_eoslib_hash64(mp_obj_t obj1) {
 	uint64_t key = 0;
 	if (MP_OBJ_IS_STR(obj1)) {
 		size_t len;
-		int i;
 	   const char* str = mp_obj_str_get_data(obj1, &len);
-
 	   key = XXH64(str, len, 0);
-
-	   /*
-	   for (int i=0;i<len;i++) {
-	   		((char*)(&key))[i] = str[i];
-	   }
-	   */
 	   return mp_obj_new_int_from_ull(key);
 	} else if (MP_OBJ_IS_INT(obj1)) {
 		return obj1;
