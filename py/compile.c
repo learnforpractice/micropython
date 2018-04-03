@@ -3351,7 +3351,7 @@ STATIC void scope_compute_things(scope_t *scope) {
 }
 
 #if !MICROPY_PERSISTENT_CODE_SAVE
-STATIC
+//STATIC
 #endif
 mp_raw_code_t *mp_compile_to_raw_code(mp_parse_tree_t *parse_tree, qstr source_file, uint emit_opt, bool is_repl) {
     // put compiler state on the stack, it's relatively small

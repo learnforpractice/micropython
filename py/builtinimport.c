@@ -140,30 +140,7 @@ STATIC void do_load_from_lexer(mp_obj_t module_obj, mp_lexer_t *lex) {
     mp_obj_dict_t *mod_globals = mp_obj_module_get_globals(module_obj);
     mp_parse_compile_execute(lex, MP_PARSE_FILE_INPUT, mod_globals, mod_globals);
 }
-//void print_time();
-mp_obj_t micropy_load(const char *mod_name, const char *data, size_t len) {
-	nlr_buf_t nlr;
-	if (nlr_push(&nlr) == 0)
-	{
-		qstr qstr_mod_name = qstr_from_str(mod_name);
-//	   print_time();
-	   mp_lexer_t *lex = mp_lexer_new_from_str_len(qstr_mod_name, data, (mp_uint_t)len, 0);
-//	   print_time();
-	   mp_obj_t module_obj = mp_obj_new_module(qstr_mod_name);
-	   do_load_from_lexer(module_obj, lex);
-//	   print_time();
 
-		nlr_pop();
-		return module_obj;
-	}
-	else
-	{
-		mp_obj_print_exception(&mp_plat_print, MP_OBJ_FROM_PTR(nlr.ret_val));
-		// uncaught exception
-		return (mp_obj_t)nlr.ret_val;
-	}
-
-}
 
 mp_obj_t micropy_call_0(mp_obj_t module_obj, const char *func) {
    mp_obj_t py_func = mp_load_attr(module_obj, qstr_from_str(func));
@@ -542,3 +519,51 @@ mp_obj_t mp_builtin___import__(size_t n_args, const mp_obj_t *args) {
     return top_module_obj;
 }
 MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(mp_builtin___import___obj, 1, 5, mp_builtin___import__);
+
+
+//void print_time();
+mp_obj_t micropy_load_from_py(const char *mod_name, const char *data, size_t len) {
+	nlr_buf_t nlr;
+	if (nlr_push(&nlr) == 0)
+	{
+		qstr qstr_mod_name = qstr_from_str(mod_name);
+//	   print_time();
+
+		mp_lexer_t *lex = mp_lexer_new_from_str_len(qstr_mod_name, data, (mp_uint_t)len, 0);
+		//	   print_time();
+		mp_obj_t module_obj = mp_obj_new_module(qstr_mod_name);
+		do_load_from_lexer(module_obj, lex);
+		//	   print_time();
+
+		nlr_pop();
+		return module_obj;
+	}
+	else
+	{
+		mp_obj_print_exception(&mp_plat_print, MP_OBJ_FROM_PTR(nlr.ret_val));
+		// uncaught exception
+		return (mp_obj_t)nlr.ret_val;
+	}
+
+}
+
+mp_obj_t micropy_load_from_mpy(const char *mod_name, const char *data, size_t len) {
+	nlr_buf_t nlr;
+	if (nlr_push(&nlr) == 0)
+	{
+		qstr qstr_mod_name = qstr_from_str(mod_name);
+//	   print_time();
+		mp_obj_t module_obj = mp_obj_new_module(qstr_mod_name);
+		mp_raw_code_t *raw_code = mp_raw_code_load_mem(data, len);
+		do_execute_raw_code(module_obj, raw_code);
+		nlr_pop();
+		return module_obj;
+	}
+	else
+	{
+		mp_obj_print_exception(&mp_plat_print, MP_OBJ_FROM_PTR(nlr.ret_val));
+		// uncaught exception
+		return (mp_obj_t)nlr.ret_val;
+	}
+
+}

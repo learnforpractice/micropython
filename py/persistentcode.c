@@ -211,9 +211,11 @@ STATIC mp_raw_code_t *load_raw_code(mp_reader_t *reader) {
 mp_raw_code_t *mp_raw_code_load(mp_reader_t *reader) {
     byte header[4];
     read_bytes(reader, header, sizeof(header));
+//    printf("%d %d %d %d \n", header[0], header[1], header[2], header[3]);
+//    printf("%d %d %d %d \n", 'M', MPY_VERSION, MPY_FEATURE_FLAGS_DYNAMIC, mp_small_int_bits());
     if (header[0] != 'M'
         || header[1] != MPY_VERSION
-        || header[2] != MPY_FEATURE_FLAGS
+        || header[2] != MPY_FEATURE_FLAGS_DYNAMIC//MPY_FEATURE_FLAGS
         || header[3] > mp_small_int_bits()) {
         mp_raise_ValueError("incompatible .mpy file");
     }
@@ -353,7 +355,7 @@ STATIC void save_raw_code(mp_print_t *print, mp_raw_code_t *rc) {
 }
 
 void mp_raw_code_save(mp_raw_code_t *rc, mp_print_t *print) {
-    // header contains:
+	// header contains:
     //  byte  'M'
     //  byte  version
     //  byte  feature flags
@@ -391,6 +393,7 @@ void mp_raw_code_save_file(mp_raw_code_t *rc, const char *filename) {
     mp_raw_code_save(rc, &fd_print);
     close(fd);
 }
+
 
 #else
 #error mp_raw_code_save_file not implemented for this platform
