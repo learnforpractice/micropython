@@ -351,6 +351,8 @@ int main_micropython(int argc, char **argv) {
 
     assert(sizeof(long long) == 8);
 
+    memset(&mp_state_ctx, 0, sizeof(mp_state_ctx));
+
     #if MICROPY_PY_THREAD
     mp_thread_init();
     #endif
@@ -380,7 +382,7 @@ MP_NOINLINE int main_(int argc, char **argv) {
 //    signal(SIGPIPE, SIG_IGN);
     #endif
 
-    mp_stack_set_limit(40000 * (BYTES_PER_WORD / 4));
+    mp_stack_set_limit(400000 * (BYTES_PER_WORD / 4));
 
 #if MICROPY_ENABLE_GC
     char *heap = malloc(heap_size);
