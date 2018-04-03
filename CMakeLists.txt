@@ -1,7 +1,9 @@
 file(GLOB HEADERS "py/*.h")
 
 add_custom_command(
-    OUTPUT ${CMAKE_CURRENT_SOURCE_DIR}/ports/unix/build/frozen.c ${CMAKE_CURRENT_SOURCE_DIR}/ports/unix/build/genhdr/qstrdefs.collected.h
+    OUTPUT ${CMAKE_CURRENT_SOURCE_DIR}/ports/unix/build/frozen.c 
+    OUTPUT ${CMAKE_CURRENT_SOURCE_DIR}/ports/unix/build/frozen_mpy.c
+    OUTPUT ${CMAKE_CURRENT_SOURCE_DIR}/ports/unix/build/genhdr/qstrdefs.collected.h
 
     COMMAND make axtls
     COMMAND make lib
@@ -50,6 +52,7 @@ ${CMAKE_CURRENT_SOURCE_DIR}/ports/unix/build/frozen_mpy.c
 #extmod/modframebuf.c
 #extmod/rai/modrailib.c
 
+py/mp_compiler.c
 extmod/eoslib/modeoslib.c
 extmod/crypto-algorithms/xxhash.c
 ports/unix/main_eos.c
@@ -194,3 +197,4 @@ INSTALL( TARGETS
    LIBRARY DESTINATION lib
    ARCHIVE DESTINATION lib
 )
+
