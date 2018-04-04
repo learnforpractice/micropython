@@ -317,6 +317,22 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_1(mod_eoslib_hash64_obj, mod_eoslib_hash64);
 
 
 
+STATIC mp_obj_t mod_eoslib_S(mp_obj_t obj1, mp_obj_t obj2) {
+	uint64_t ret;
+	uint8_t precision;
+	const char* str;
+	size_t len;
+
+	precision = (uint8_t)mp_obj_get_uint(obj1);
+
+	str = mp_obj_str_get_data(obj2, &len);
+
+	ret = string_to_symbol(precision, str);
+	return mp_obj_new_int_from_ll(ret);
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_2(mod_eoslib_S_obj, mod_eoslib_S);
+
+
 #if 0
 STATIC mp_obj_t mod_eoslib_send_inline(size_t n_args, const mp_obj_t *args) {
 	return 0;
@@ -383,6 +399,8 @@ STATIC const mp_rom_map_elem_t mp_module_eoslib_globals_table[] = {
 	 { MP_ROM_QSTR(MP_QSTR_db_upperbound_i64), MP_ROM_PTR(&mod_eoslib_db_upperbound_i64_obj) },
 	 { MP_ROM_QSTR(MP_QSTR_db_end_i64), MP_ROM_PTR(&mod_eoslib_db_end_i64_obj) },
 	 { MP_ROM_QSTR(MP_QSTR_hash64), MP_ROM_PTR(&mod_eoslib_hash64_obj) },
+
+	 { MP_ROM_QSTR(MP_QSTR_S), MP_ROM_PTR(&mod_eoslib_S_obj) },
 };
 
 STATIC MP_DEFINE_CONST_DICT(mp_module_eoslib_globals, mp_module_eoslib_globals_table);

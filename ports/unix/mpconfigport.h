@@ -109,7 +109,6 @@
 #define MICROPY_PY_EOSLIB           (1)
 #define MICROPY_MODULE_FROZEN_STR 		(1)
 #define MICROPY_PERSISTENT_CODE_SAVE (1)
-#define MICROPY_MODULE_FROZEN_MPY		(1)
 
 //already defined in Makefile: ./ports/unix/Makefile:180:CFLAGS += -DMICROPY_MODULE_FROZEN_MPY
 //#define MICROPY_MODULE_FROZEN_MPY (1)

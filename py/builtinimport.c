@@ -554,7 +554,7 @@ mp_obj_t micropy_load_from_mpy(const char *mod_name, const char *data, size_t le
 		qstr qstr_mod_name = qstr_from_str(mod_name);
 //	   print_time();
 		mp_obj_t module_obj = mp_obj_new_module(qstr_mod_name);
-		mp_raw_code_t *raw_code = mp_raw_code_load_mem(data, len);
+		mp_raw_code_t *raw_code = mp_raw_code_load_mem((const byte*)data, len);
 		do_execute_raw_code(module_obj, raw_code);
 		nlr_pop();
 		return module_obj;
