@@ -176,7 +176,7 @@ ifneq ($(FROZEN_MPY_DIR),)
 # To use frozen bytecode, put your .py files in a subdirectory (eg frozen/) and
 # then invoke make with FROZEN_MPY_DIR=frozen (be sure to build from scratch).
 CFLAGS += -DMICROPY_QSTR_EXTRA_POOL=mp_qstr_frozen_const_pool
-CFLAGS += -DMICROPY_MODULE_FROZEN_MPY
+#CFLAGS += -DMICROPY_MODULE_FROZEN_MPY
 CFLAGS += -DMPZ_DIG_SIZE=16 # force 16 bits to work on both 32 and 64 bit archs
 MPY_CROSS_FLAGS += -mcache-lookup-bc
 endif
