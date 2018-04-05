@@ -169,7 +169,7 @@ STATIC mp_obj_t mod_eoslib_db_get_i64(size_t n_args, const mp_obj_t *args) {
    if (size <= 0) {
 		return mp_const_none;
    }
-   return mp_obj_new_str(value, size);
+   return mp_obj_new_bytes(value, size);
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_VAR(mod_eoslib_db_get_i64_obj, 1, mod_eoslib_db_get_i64);
 
@@ -248,7 +248,7 @@ STATIC mp_obj_t mod_eoslib_read_action(void) {
 	}
 	char *data = malloc(size);
 	read_action(data, size);
-	mp_obj_t obj = mp_obj_new_str(data, size);
+	mp_obj_t obj = mp_obj_new_bytes(data, size);
 	free(data);
    return obj;
 }
