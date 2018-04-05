@@ -1,6 +1,8 @@
 #include <stdlib.h>
 #include "../../../chain/micropython/mpeoslib.h"
 #include "xxhash.h"
+#include "py/obj.h"
+#include "py/objstr.h"
 
 #if MICROPY_PY_EOSLIB
 static struct eosapi s_eosapi;
@@ -169,7 +171,7 @@ STATIC mp_obj_t mod_eoslib_db_get_i64(size_t n_args, const mp_obj_t *args) {
    if (size <= 0) {
 		return mp_const_none;
    }
-   return mp_obj_new_bytes(value, size);
+   return mp_obj_new_bytes((byte*)value, size);
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_VAR(mod_eoslib_db_get_i64_obj, 1, mod_eoslib_db_get_i64);
 
@@ -246,8 +248,8 @@ STATIC mp_obj_t mod_eoslib_read_action(void) {
 	if (size == 0) {
 		return mp_const_none;
 	}
-	char *data = malloc(size);
-	read_action(data, size);
+	byte *data = malloc(size);
+	read_action((char*)data, size);
 	mp_obj_t obj = mp_obj_new_bytes(data, size);
 	free(data);
    return obj;
@@ -295,14 +297,16 @@ METHOD1(require_recipient)
 
 STATIC mp_obj_t mod_eoslib_is_account(mp_obj_t obj1) {
    uint64_t arg1 = mp_obj_get_uint(obj1);
-   is_account(arg1);
-   return mp_const_none;
+   if (is_account(arg1)) {
+   		return mp_const_true;
+   }
+   return mp_const_false;
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(mod_eoslib_is_account_obj, mod_eoslib_is_account);
 
 STATIC mp_obj_t mod_eoslib_hash64(mp_obj_t obj1) {
 	uint64_t key = 0;
-	if (MP_OBJ_IS_STR(obj1)) {
+	if (MP_OBJ_IS_STR_OR_BYTES(obj1)) {
 		size_t len;
 	   const char* str = mp_obj_str_get_data(obj1, &len);
 	   key = XXH64(str, len, 0);
