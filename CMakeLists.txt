@@ -66,6 +66,7 @@ ports/unix/modtime.c
 ports/unix/moduselect.c
     py/mpstate.c
     py/nlrx64.c
+    py/nlr.c
     py/malloc.c
     py/gc.c
     py/qstr.c
