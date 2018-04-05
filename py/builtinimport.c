@@ -550,47 +550,39 @@ MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(mp_builtin___import___obj, 1, 5, mp_builtin_
 
 //void print_time();
 mp_obj_t micropy_load_from_py(const char *mod_name, const char *data, size_t len) {
-	nlr_buf_t nlr;
-	if (nlr_push(&nlr) == 0)
-	{
-		qstr qstr_mod_name = qstr_from_str(mod_name);
-//	   print_time();
-
-		mp_lexer_t *lex = mp_lexer_new_from_str_len(qstr_mod_name, data, (mp_uint_t)len, 0);
-		//	   print_time();
-		mp_obj_t module_obj = mp_obj_new_module(qstr_mod_name);
-		do_load_from_lexer(module_obj, lex);
-		//	   print_time();
-
-		nlr_pop();
-		return module_obj;
-	}
-	else
-	{
-		mp_obj_print_exception(&mp_plat_print, MP_OBJ_FROM_PTR(nlr.ret_val));
-		// uncaught exception
-		return (mp_obj_t)nlr.ret_val;
-	}
-
+   nlr_buf_t nlr;
+   if (nlr_push(&nlr) == 0)
+   {
+      qstr qstr_mod_name = qstr_from_str(mod_name);
+      mp_lexer_t *lex = mp_lexer_new_from_str_len(qstr_mod_name, data, (mp_uint_t)len, 0);
+      mp_obj_t module_obj = mp_obj_new_module(qstr_mod_name);
+      do_load_from_lexer(module_obj, lex);
+      nlr_pop();
+      return module_obj;
+   }
+   else
+   {
+      mp_obj_print_exception(&mp_plat_print, MP_OBJ_FROM_PTR(nlr.ret_val));
+      // uncaught exception
+      return (mp_obj_t)nlr.ret_val;
+   }
 }
 
 mp_obj_t micropy_load_from_mpy(const char *mod_name, const char *data, size_t len) {
-	nlr_buf_t nlr;
-	if (nlr_push(&nlr) == 0)
-	{
-		qstr qstr_mod_name = qstr_from_str(mod_name);
-//	   print_time();
-		mp_obj_t module_obj = mp_obj_new_module(qstr_mod_name);
-		mp_raw_code_t *raw_code = mp_raw_code_load_mem((const byte*)data, len);
-		do_execute_raw_code(module_obj, raw_code);
-		nlr_pop();
-		return module_obj;
-	}
-	else
-	{
-		mp_obj_print_exception(&mp_plat_print, MP_OBJ_FROM_PTR(nlr.ret_val));
-		// uncaught exception
-		return (mp_obj_t)nlr.ret_val;
-	}
-
+   nlr_buf_t nlr;
+   if (nlr_push(&nlr) == 0)
+   {
+      qstr qstr_mod_name = qstr_from_str(mod_name);
+      mp_obj_t module_obj = mp_obj_new_module(qstr_mod_name);
+      mp_raw_code_t *raw_code = mp_raw_code_load_mem((const byte*)data, len);
+      do_execute_raw_code(module_obj, raw_code);
+      nlr_pop();
+      return module_obj;
+   }
+   else
+   {
+      mp_obj_print_exception(&mp_plat_print, MP_OBJ_FROM_PTR(nlr.ret_val));
+      // uncaught exception
+      return (mp_obj_t)nlr.ret_val;
+   }
 }

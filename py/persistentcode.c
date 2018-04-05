@@ -359,7 +359,7 @@ STATIC void save_raw_code(mp_print_t *print, mp_raw_code_t *rc) {
 }
 
 void mp_raw_code_save(mp_raw_code_t *rc, mp_print_t *print) {
-	// header contains:
+   // header contains:
     //  byte  'M'
     //  byte  version
     //  byte  feature flags

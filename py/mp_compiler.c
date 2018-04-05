@@ -55,52 +55,52 @@ STATIC void stderr_print_strn(void *env, const char *str, size_t len) {
 }
 
 struct buffer {
-	int size;
-	int pos;
-	char *buffer;
+   int size;
+   int pos;
+   char *buffer;
 };
 
 STATIC void copy_to_buffer(void *env, const char *str, size_t len) {
-	struct buffer* buf = (struct buffer *)env;
+   struct buffer* buf = (struct buffer *)env;
    assert(buf->size >= buf->pos+len);
-	memcpy(buf->buffer+buf->pos, str, len);
+   memcpy(buf->buffer+buf->pos, str, len);
     buf->pos += len;
 }
 
 int mp_raw_code_save_to_buffer(mp_raw_code_t *rc, char* mpy_code, size_t size) {
-	struct buffer buf;
-	memset(&buf, 0, sizeof(buf));
-	buf.size = size;
-	buf.pos = 0;
-	buf.buffer = mpy_code;
-	mp_print_t fd_print = {(void*)&buf, copy_to_buffer};
-	mp_raw_code_save(rc, &fd_print);
-	return buf.pos;
+   struct buffer buf;
+   memset(&buf, 0, sizeof(buf));
+   buf.size = size;
+   buf.pos = 0;
+   buf.buffer = mpy_code;
+   mp_print_t fd_print = {(void*)&buf, copy_to_buffer};
+   mp_raw_code_save(rc, &fd_print);
+   return buf.pos;
 }
 
 //mp_lexer_t *mp_lexer_new_from_str_len(qstr src_name, const char *str, size_t len, size_t free_len)
 int compile_and_save_to_buffer(const char* src_name, const char *src_buffer, size_t src_size, char* buffer, size_t size) {
-	nlr_buf_t nlr;
-    if (nlr_push(&nlr) == 0) {
-//        mp_lexer_t *lex = mp_lexer_new_from_file(file);
+   nlr_buf_t nlr;
+   if (nlr_push(&nlr) == 0) {
+      //        mp_lexer_t *lex = mp_lexer_new_from_file(file);
 
-        mp_lexer_t *lex = mp_lexer_new_from_str_len(qstr_from_str(src_name), src_buffer, src_size, false);
+      mp_lexer_t *lex = mp_lexer_new_from_str_len(qstr_from_str(src_name), src_buffer, src_size, false);
 
 
-        qstr source_name;
-        source_name = lex->source_name;
+      qstr source_name;
+      source_name = lex->source_name;
 
-        mp_parse_tree_t parse_tree = mp_parse(lex, MP_PARSE_FILE_INPUT);
-        mp_raw_code_t *rc = mp_compile_to_raw_code(&parse_tree, source_name, emit_opt, false);
+      mp_parse_tree_t parse_tree = mp_parse(lex, MP_PARSE_FILE_INPUT);
+      mp_raw_code_t *rc = mp_compile_to_raw_code(&parse_tree, source_name, emit_opt, false);
 
-        int length = mp_raw_code_save_to_buffer(rc, buffer, size);
+      int length = mp_raw_code_save_to_buffer(rc, buffer, size);
 
-        nlr_pop();
-        return length;
-    } else {
-        // uncaught exception
-        mp_obj_print_exception(&mp_stderr_print, (mp_obj_t)nlr.ret_val);
-        return 0;
-    }
+      nlr_pop();
+      return length;
+   } else {
+      // uncaught exception
+      mp_obj_print_exception(&mp_stderr_print, (mp_obj_t)nlr.ret_val);
+      return 0;
+   }
 }
 

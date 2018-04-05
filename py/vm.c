@@ -46,18 +46,18 @@ uint64_t get_microseconds() {
 }
 
 void execution_start() {
-	execution_start_time = get_microseconds();
+   execution_start_time = get_microseconds();
 }
 
 void execution_end() {
-	execution_start_time = 0;
+   execution_start_time = 0;
 }
 
 int is_execution_time_expire() {
-	if (execution_start_time) {
-		return (execution_start_time + MAX_EXECUTION_TIME) < get_microseconds();
-	}
-	return 0;
+   if (execution_start_time) {
+      return (execution_start_time + MAX_EXECUTION_TIME) < get_microseconds();
+   }
+   return 0;
 }
 
 #if 0
@@ -154,40 +154,40 @@ mp_vm_return_kind_t mp_execute_bytecode(mp_code_state_t *code_state, volatile mp
 #if MICROPY_OPT_COMPUTED_GOTO
     #include "py/vmentrytable.h"
     #define DISPATCH() do { \
-		if (is_execution_time_expire()) { \
-			mp_obj_t obj = mp_obj_new_exception_msg(&mp_type_RuntimeError, "execution timeout!"); \
-			RAISE(obj); \
-		} \
-		TRACE(ip); \
+      if (is_execution_time_expire()) { \
+         mp_obj_t obj = mp_obj_new_exception_msg(&mp_type_RuntimeError, "execution timeout!"); \
+         RAISE(obj); \
+      } \
+      TRACE(ip); \
         MARK_EXC_IP_GLOBAL(); \
         goto *entry_table[*ip++]; \
     } while (0)
 
-	#define DISPATCH_WITH_PEND_EXC_CHECK() \
-	do { \
-		if (is_execution_time_expire()) { \
-			mp_obj_t obj = mp_obj_new_exception_msg(&mp_type_RuntimeError, "execution timeout!"); \
-			RAISE(obj); \
-		} \
-		goto pending_exception_check; \
-	} while (0)
+   #define DISPATCH_WITH_PEND_EXC_CHECK() \
+   do { \
+      if (is_execution_time_expire()) { \
+         mp_obj_t obj = mp_obj_new_exception_msg(&mp_type_RuntimeError, "execution timeout!"); \
+         RAISE(obj); \
+      } \
+      goto pending_exception_check; \
+   } while (0)
 
-	#define ENTRY(op) entry_##op
+   #define ENTRY(op) entry_##op
     #define ENTRY_DEFAULT entry_default
 #else
     #define DISPATCH() \
-		if (is_execution_time_expire()) { \
-			mp_obj_t obj = mp_obj_new_exception_msg(&mp_type_RuntimeError, "execution timeout!"); \
-			RAISE(obj); \
-		} \
-		break
+      if (is_execution_time_expire()) { \
+         mp_obj_t obj = mp_obj_new_exception_msg(&mp_type_RuntimeError, "execution timeout!"); \
+         RAISE(obj); \
+      } \
+      break
 
-	#define DISPATCH_WITH_PEND_EXC_CHECK() \
-		if (is_execution_time_expire()) { \
-			mp_obj_t obj = mp_obj_new_exception_msg(&mp_type_RuntimeError, "execution timeout!"); \
-			RAISE(obj); \
-		} \
-		goto pending_exception_check
+   #define DISPATCH_WITH_PEND_EXC_CHECK() \
+      if (is_execution_time_expire()) { \
+         mp_obj_t obj = mp_obj_new_exception_msg(&mp_type_RuntimeError, "execution timeout!"); \
+         RAISE(obj); \
+      } \
+      goto pending_exception_check
 
     #define ENTRY(op) case op
     #define ENTRY_DEFAULT default
