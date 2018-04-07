@@ -458,20 +458,132 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_2(mod_eoslib_S_obj, mod_eoslib_S);
 
 
       #define DB_API_METHOD_WRAPPERS_ARRAY_SECONDARY_WRAP(IDX, ARR_SIZE, ARR_ELEMENT_TYPE)\
-      int db_##IDX##_store( uint64_t scope, uint64_t table, uint64_t payer, uint64_t id, const char* data, size_t data_len); \
-      void db_##IDX##_update( int iterator, uint64_t payer, const char* data, size_t data_len ); \
-      void db_##IDX##_remove( int iterator ); \
-      int db_##IDX##_find_secondary( uint64_t code, uint64_t scope, uint64_t table, const char* data, size_t data_len, uint64_t* primary ); \
-      int db_##IDX##_find_primary( uint64_t code, uint64_t scope, uint64_t table, char* data, size_t data_len, uint64_t primary ); \
-      int db_##IDX##_lowerbound( uint64_t code, uint64_t scope, uint64_t table, char* data, size_t data_len, uint64_t* primary ); \
-      int db_##IDX##_upperbound( uint64_t code, uint64_t scope, uint64_t table, char* data, size_t data_len, uint64_t* primary ); \
-      int db_##IDX##_end( uint64_t code, uint64_t scope, uint64_t table ); \
-      int db_##IDX##_next( int iterator, uint64_t* primary  ); \
-      int db_##IDX##_previous( int iterator, uint64_t* primary );
+      STATIC mp_obj_t mod_eoslib_db_##IDX##_store(size_t n_args, const mp_obj_t *args) { \
+         size_t value_len = 0; \
+         ARR_ELEMENT_TYPE* secondary; \
+         uint64_t scope = mp_obj_get_uint(args[0]); \
+         uint64_t table = mp_obj_get_uint(args[1]); \
+         uint64_t payer = mp_obj_get_uint(args[2]); \
+         uint64_t id = mp_obj_get_uint(args[3]); \
+         secondary = (ARR_ELEMENT_TYPE *)mp_obj_str_get_data(args[4], &value_len); \
+         eosio_assert(value_len == sizeof(ARR_ELEMENT_TYPE)*ARR_SIZE, "bad length"); \
+         int itr = db_##IDX##_store(scope, table, payer, id, (const char*)secondary, value_len); \
+         return mp_obj_new_int(itr); \
+      } \
+      STATIC MP_DEFINE_CONST_FUN_OBJ_VAR(mod_eoslib_db_##IDX##_store_obj, 5, mod_eoslib_db_##IDX##_store); \
+      \
+      STATIC mp_obj_t mod_eoslib_db_##IDX##_update(size_t n_args, const mp_obj_t *args) { \
+         size_t value_len = 0; \
+         ARR_ELEMENT_TYPE* secondary; \
+         uint64_t iterator = mp_obj_get_uint(args[0]); \
+         uint64_t payer = mp_obj_get_uint(args[1]); \
+         secondary = (ARR_ELEMENT_TYPE *)mp_obj_str_get_data(args[2], &value_len); \
+         eosio_assert(value_len == sizeof(ARR_ELEMENT_TYPE)*ARR_SIZE, "bad length"); \
+         db_##IDX##_update(iterator, payer, (const char*)secondary, value_len); \
+         return mp_const_none; \
+      } \
+      STATIC MP_DEFINE_CONST_FUN_OBJ_VAR(mod_eoslib_db_##IDX##_update_obj, 3, mod_eoslib_db_##IDX##_update); \
+      STATIC mp_obj_t mod_eoslib_db_##IDX##_remove(size_t n_args, const mp_obj_t *args) { \
+         uint64_t iterator = mp_obj_get_uint(args[0]); \
+         db_##IDX##_remove(iterator); \
+         return mp_const_none; \
+      } \
+      STATIC MP_DEFINE_CONST_FUN_OBJ_VAR(mod_eoslib_db_##IDX##_remove_obj, 3, mod_eoslib_db_##IDX##_remove); \
+      STATIC mp_obj_t mod_eoslib_db_##IDX##_find_secondary(size_t n_args, const mp_obj_t *args) { \
+         size_t value_len = 0; \
+         ARR_ELEMENT_TYPE* secondary; \
+         uint64_t primary = 0; \
+         uint64_t code = mp_obj_get_uint(args[0]); \
+         uint64_t scope = mp_obj_get_uint(args[1]); \
+         uint64_t table = mp_obj_get_uint(args[2]); \
+         secondary = (ARR_ELEMENT_TYPE *)mp_obj_str_get_data(args[3], &value_len); \
+         int itr = db_##IDX##_find_secondary( code, scope, table, (const char*)secondary , sizeof(ARR_ELEMENT_TYPE)*ARR_SIZE, &primary ); \
+         mp_obj_tuple_t *tuple = mp_obj_new_tuple(2, NULL); \
+         tuple->items[0] = mp_obj_new_int(itr); \
+         tuple->items[1] = mp_obj_new_int(primary); \
+         return tuple; \
+      } \
+      STATIC MP_DEFINE_CONST_FUN_OBJ_VAR(mod_eoslib_db_##IDX##_find_secondary_obj, 4, mod_eoslib_db_##IDX##_find_secondary); \
+      STATIC mp_obj_t mod_eoslib_db_##IDX##_find_primary(size_t n_args, const mp_obj_t *args) { \
+         ARR_ELEMENT_TYPE secondary[ARR_SIZE]; \
+         uint64_t primary = 0; \
+         uint64_t code = mp_obj_get_uint(args[0]); \
+         uint64_t scope = mp_obj_get_uint(args[1]); \
+         uint64_t table = mp_obj_get_uint(args[2]); \
+         primary = mp_obj_get_uint(args[3]); \
+         int itr = db_##IDX##_find_primary( code, scope, table, (char*)&secondary , sizeof(ARR_ELEMENT_TYPE)*ARR_SIZE, primary ); \
+         mp_obj_t _secondary = mp_obj_new_bytes((byte*)&secondary, sizeof(secondary)); \
+         mp_obj_tuple_t *tuple = mp_obj_new_tuple(2, NULL); \
+         tuple->items[0] = mp_obj_new_int(itr); \
+         tuple->items[1] = _secondary; \
+         return tuple; \
+      } \
+      STATIC MP_DEFINE_CONST_FUN_OBJ_VAR(mod_eoslib_db_##IDX##_find_primary_obj, 4, mod_eoslib_db_##IDX##_find_primary); \
+      STATIC mp_obj_t mod_eoslib_db_##IDX##_lowerbound(size_t n_args, const mp_obj_t *args) { \
+         uint64_t primary = 0; \
+         ARR_ELEMENT_TYPE secondary[ARR_SIZE]; \
+         uint64_t code = mp_obj_get_uint(args[0]); \
+         uint64_t scope = mp_obj_get_uint(args[1]); \
+         uint64_t table = mp_obj_get_uint(args[2]); \
+         int itr = db_##IDX##_lowerbound( code, scope, table, (char*)&secondary , sizeof(ARR_ELEMENT_TYPE)*ARR_SIZE, &primary ); \
+         mp_obj_t _secondary = mp_obj_new_bytes((byte*)&secondary, sizeof(ARR_ELEMENT_TYPE)*ARR_SIZE); \
+         mp_obj_tuple_t *tuple = mp_obj_new_tuple(3, NULL); \
+         tuple->items[0] = mp_obj_new_int(itr); \
+         tuple->items[1] = mp_obj_new_int(primary); \
+         tuple->items[2] = _secondary; \
+         return tuple; \
+      } \
+      STATIC MP_DEFINE_CONST_FUN_OBJ_VAR(mod_eoslib_db_##IDX##_lowerbound_obj, 3, mod_eoslib_db_##IDX##_lowerbound); \
+      \
+      STATIC mp_obj_t mod_eoslib_db_##IDX##_upperbound(size_t n_args, const mp_obj_t *args) { \
+         uint64_t primary = 0; \
+         ARR_ELEMENT_TYPE secondary[ARR_SIZE]; \
+         uint64_t code = mp_obj_get_uint(args[0]); \
+         uint64_t scope = mp_obj_get_uint(args[1]); \
+         uint64_t table = mp_obj_get_uint(args[2]); \
+         int itr = db_##IDX##_upperbound( code, scope, table, (char*)&secondary , sizeof(secondary), &primary ); \
+         mp_obj_t _secondary = mp_obj_new_bytes((byte*)&secondary, sizeof(secondary)); \
+         mp_obj_tuple_t *tuple = mp_obj_new_tuple(3, NULL); \
+         tuple->items[0] = mp_obj_new_int(itr); \
+         tuple->items[1] = mp_obj_new_int(primary); \
+         tuple->items[2] = _secondary; \
+         return tuple; \
+      } \
+      STATIC MP_DEFINE_CONST_FUN_OBJ_VAR(mod_eoslib_db_##IDX##_upperbound_obj, 3, mod_eoslib_db_##IDX##_upperbound); \
+      STATIC mp_obj_t mod_eoslib_db_##IDX##_end(size_t n_args, const mp_obj_t *args) { \
+         uint64_t code = mp_obj_get_uint(args[0]); \
+         uint64_t scope = mp_obj_get_uint(args[1]); \
+         uint64_t table = mp_obj_get_uint(args[2]); \
+         int itr = db_##IDX##_end( code, scope, table ); \
+         return mp_obj_new_int(itr); \
+      } \
+      STATIC MP_DEFINE_CONST_FUN_OBJ_VAR(mod_eoslib_db_##IDX##_end_obj, 3, mod_eoslib_db_##IDX##_end); \
+      \
+      STATIC mp_obj_t mod_eoslib_db_##IDX##_next(size_t n_args, const mp_obj_t *args) { \
+         uint64_t primary = 0;\
+         uint64_t iterator = mp_obj_get_uint(args[0]); \
+         int itr = db_##IDX##_next(iterator, &primary); \
+         mp_obj_tuple_t *tuple = mp_obj_new_tuple(2, NULL); \
+         tuple->items[0] = mp_obj_new_int(itr); \
+         tuple->items[1] = mp_obj_new_int(primary); \
+         return tuple; \
+      } \
+      STATIC MP_DEFINE_CONST_FUN_OBJ_VAR(mod_eoslib_db_##IDX##_next_obj, 1, mod_eoslib_db_##IDX##_next); \
+      STATIC mp_obj_t mod_eoslib_db_##IDX##_previous(size_t n_args, const mp_obj_t *args) { \
+         uint64_t primary = 0;\
+         uint64_t iterator = mp_obj_get_uint(args[0]); \
+         int itr = db_##IDX##_previous(iterator, &primary); \
+         mp_obj_tuple_t *tuple = mp_obj_new_tuple(2, NULL); \
+         tuple->items[0] = mp_obj_new_int(itr); \
+         tuple->items[1] = mp_obj_new_int(primary); \
+         return tuple; \
+      } \
+      STATIC MP_DEFINE_CONST_FUN_OBJ_VAR(mod_eoslib_db_##IDX##_previous_obj, 1, mod_eoslib_db_##IDX##_previous);
 
 DB_API_METHOD_WRAPPERS_SIMPLE_SECONDARY_WRAP(idx64, uint64_t)
 DB_API_METHOD_WRAPPERS_SIMPLE_SECONDARY_WRAP(idx128, uint128_t)
 DB_API_METHOD_WRAPPERS_SIMPLE_SECONDARY_WRAP(idx_double, uint64_t)
+DB_API_METHOD_WRAPPERS_ARRAY_SECONDARY_WRAP(idx256, 2, uint128_t)
 
 #if 0
 DB_API_METHOD_WRAPPERS_SIMPLE_SECONDARY_WRAP(idx64,  uint64_t)
@@ -567,6 +679,16 @@ STATIC const mp_rom_map_elem_t mp_module_eoslib_globals_table[] = {
    { MP_ROM_QSTR(MP_QSTR_db_idx_double_next), MP_ROM_PTR(&mod_eoslib_db_idx_double_next_obj) },
    { MP_ROM_QSTR(MP_QSTR_db_idx_double_previous), MP_ROM_PTR(&mod_eoslib_db_idx_double_previous_obj) },
 
+   { MP_ROM_QSTR(MP_QSTR_db_idx256_store), MP_ROM_PTR(&mod_eoslib_db_idx256_store_obj) },
+   { MP_ROM_QSTR(MP_QSTR_db_idx256_update), MP_ROM_PTR(&mod_eoslib_db_idx256_update_obj) },
+   { MP_ROM_QSTR(MP_QSTR_db_idx256_remove), MP_ROM_PTR(&mod_eoslib_db_idx256_remove_obj) },
+   { MP_ROM_QSTR(MP_QSTR_db_idx256_find_secondary), MP_ROM_PTR(&mod_eoslib_db_idx256_find_secondary_obj) },
+   { MP_ROM_QSTR(MP_QSTR_db_idx256_find_primary), MP_ROM_PTR(&mod_eoslib_db_idx256_find_primary_obj) },
+   { MP_ROM_QSTR(MP_QSTR_db_idx256_lowerbound), MP_ROM_PTR(&mod_eoslib_db_idx256_lowerbound_obj) },
+   { MP_ROM_QSTR(MP_QSTR_db_idx256_upperbound), MP_ROM_PTR(&mod_eoslib_db_idx256_upperbound_obj) },
+   { MP_ROM_QSTR(MP_QSTR_db_idx256_end), MP_ROM_PTR(&mod_eoslib_db_idx256_end_obj) },
+   { MP_ROM_QSTR(MP_QSTR_db_idx256_next), MP_ROM_PTR(&mod_eoslib_db_idx256_next_obj) },
+   { MP_ROM_QSTR(MP_QSTR_db_idx256_previous), MP_ROM_PTR(&mod_eoslib_db_idx256_previous_obj) },
 
 	 { MP_ROM_QSTR(MP_QSTR_db_store_i64), MP_ROM_PTR(&mod_eoslib_db_store_i64_obj) },
 	 { MP_ROM_QSTR(MP_QSTR_db_update_i64), MP_ROM_PTR(&mod_eoslib_db_update_i64_obj) },
