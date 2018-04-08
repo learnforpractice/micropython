@@ -43,6 +43,15 @@
 
 STATIC mp_obj_t static_class_method_make_new(const mp_obj_type_t *self_in, size_t n_args, size_t n_kw, const mp_obj_t *args);
 
+#undef assert
+#define assert(expression) \
+do { \
+   if (!(expression)) {\
+      mp_obj_t obj = mp_obj_new_exception_msg(&mp_type_RuntimeError, "assert error!"#expression); \
+      nlr_raise(obj); \
+   }\
+} while(0);
+
 /******************************************************************************/
 // instance object
 
