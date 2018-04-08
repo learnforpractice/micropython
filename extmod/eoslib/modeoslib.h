@@ -11,7 +11,6 @@ extern "C" {
 #include "py/obj.h"
 #include "py/objstr.h"
 
-typedef __uint128_t uint128_t;
 
 #ifdef __cplusplus
 }

@@ -29,6 +29,15 @@ STATIC mp_obj_t mod_eoslib_eosio_assert(mp_obj_t obj1, mp_obj_t obj2) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_2(mod_eoslib_eosio_assert_obj, mod_eoslib_eosio_assert);
 
+void eosio_delay(int ms);
+STATIC mp_obj_t mod_eoslib_eosio_delay(mp_obj_t obj1) {
+   int ms = mp_obj_get_int(obj1);
+   eosio_delay(ms);
+   return mp_const_none;
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_1(mod_eoslib_eosio_delay_obj, mod_eoslib_eosio_delay);
+
+
 //class crypto_api
 STATIC mp_obj_t mod_eoslib_assert_recover_key(mp_obj_t obj1, mp_obj_t obj2, mp_obj_t obj3) {
 	const char* data;
@@ -244,7 +253,7 @@ STATIC mp_obj_t mod_eoslib_read_action(void) {
 	if (size == 0) {
 		return mp_const_none;
 	}
-	byte *data = malloc(size);
+	byte *data = calloc(size, 1);
 	read_action((char*)data, size);
 	mp_obj_t obj = mp_obj_new_bytes(data, size);
 	free(data);
@@ -585,26 +594,162 @@ DB_API_METHOD_WRAPPERS_SIMPLE_SECONDARY_WRAP(idx128, uint128_t)
 DB_API_METHOD_WRAPPERS_SIMPLE_SECONDARY_WRAP(idx_double, uint64_t)
 DB_API_METHOD_WRAPPERS_ARRAY_SECONDARY_WRAP(idx256, 2, uint128_t)
 
-#if 0
-DB_API_METHOD_WRAPPERS_SIMPLE_SECONDARY_WRAP(idx64,  uint64_t)
-
-DB_API_METHOD_WRAPPERS_ARRAY_SECONDARY_WRAP(idx256, 2, uint128_t)
-#endif
-
-#if 0
 STATIC mp_obj_t mod_eoslib_send_inline(size_t n_args, const mp_obj_t *args) {
-	return 0;
+   struct mp_action mp_act;
+
+   mp_act.account = mp_obj_get_uint(args[0]);
+   mp_act.name    = mp_obj_get_uint(args[1]);
+   mp_act.auth = (uint64_t*)mp_obj_str_get_data(args[2], &mp_act.auth_len);
+   assert((mp_act.auth_len % (sizeof(uint64_t)*2)) == 0);
+
+   mp_act.data = (unsigned char*)mp_obj_str_get_data(args[3], &mp_act.data_len);
+
+   send_inline(&mp_act);
+   return mp_const_none;
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_VAR(mod_eoslib_send_inline_obj, 3, mod_eoslib_send_inline);
-#endif
 
-/*
-      account_name               account;
-      action_name                name;
-      vector<permission_level>   authorization;
-      bytes                      data;
-*/
+STATIC mp_obj_t mod_eoslib_send_context_free_inline(size_t n_args, const mp_obj_t *args) {
+   struct mp_action mp_act;
 
+   mp_act.account = mp_obj_get_uint(args[0]);
+   mp_act.name    = mp_obj_get_uint(args[1]);
+
+   if (args[2] != mp_const_none) {
+      mp_act.auth = (uint64_t*)mp_obj_str_get_data(args[2], &mp_act.auth_len);
+      assert((mp_act.auth_len % (sizeof(uint64_t)*2)) == 0);
+      mp_act.auth_len /= sizeof(uint64_t);
+   }
+
+   mp_act.data = (unsigned char*)mp_obj_str_get_data(args[3], &mp_act.data_len);
+
+   send_context_free_inline(&mp_act);
+   return mp_const_none;
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_VAR(mod_eoslib_send_context_free_inline_obj, 3, mod_eoslib_send_context_free_inline);
+
+STATIC mp_obj_t mod_eoslib_send_deferred(size_t n_args, const mp_obj_t *args) {
+   struct mp_transaction trx;
+   uint128_t sender_id;
+   uint64_t payer;
+   size_t sender_id_len;
+
+   memset(&trx, 0, sizeof(trx));
+
+   const char* id = mp_obj_str_get_data(args[0], &sender_id_len);
+   assert(sender_id_len == 16);
+   sender_id = *((uint128_t*)id);
+
+   payer = mp_obj_get_uint(args[1]);
+
+   trx.expiration             = mp_obj_get_uint(args[2]);
+   trx.region                 = mp_obj_get_uint(args[3]);
+   trx.ref_block_num          = mp_obj_get_uint(args[4]);
+   trx.ref_block_prefix       = mp_obj_get_uint(args[5]);
+   trx.max_net_usage_words    = mp_obj_get_uint(args[6]);
+   trx.max_kcpu_usage         = mp_obj_get_uint(args[7]);
+   trx.delay_sec              = mp_obj_get_uint(args[8]);
+
+   mp_obj_t* context_free_actions_obj;
+   mp_obj_t* actions_obj;
+
+   if (args[9] != mp_const_none) {
+      mp_obj_get_array(args[9], &trx.free_actions_len, &context_free_actions_obj);
+      if (trx.free_actions_len > 0) {
+         trx.context_free_actions = (struct mp_action**)calloc(trx.free_actions_len, sizeof(struct mp_action**));
+
+         for (int i=0;i<trx.free_actions_len;i++) {
+            mp_obj_t* action_obj;
+            size_t action_size;
+            mp_obj_get_array(context_free_actions_obj[i], &action_size, &action_obj);
+            assert(action_size == 4);
+
+            struct mp_action* mp_act = (struct mp_action*)calloc(1, sizeof(struct mp_action));
+
+            mp_act->account = mp_obj_get_uint(action_obj[0]);
+            mp_act->name    = mp_obj_get_uint(action_obj[1]);
+
+            if (action_obj[2] != mp_const_none) {
+               mp_act->auth = (uint64_t*)mp_obj_str_get_data(action_obj[2], &mp_act->auth_len);
+               assert((mp_act->auth_len % (sizeof(uint64_t)*2)) == 0);
+               mp_act->auth_len /= sizeof(uint64_t);
+            }
+
+            mp_act->data = (unsigned char*)mp_obj_str_get_data(action_obj[3], &mp_act->data_len);
+
+            trx.context_free_actions[i] = mp_act;
+         }
+      }
+   }
+
+   if (args[10] != mp_const_none) {
+      mp_obj_get_array(args[10], &trx.actions_len, &actions_obj);
+      if (trx.actions_len > 0) {
+         trx.actions = (struct mp_action**)calloc(trx.actions_len, sizeof(struct mp_action**));
+
+         for (int i=0;i<trx.actions_len;i++) {
+            mp_obj_t* action_obj;
+            size_t action_size;
+            mp_obj_get_array(actions_obj[i], &action_size, &action_obj);
+            assert(action_size == 4);
+
+            struct mp_action* mp_act = (struct mp_action*)calloc(1, sizeof(struct mp_action));
+
+            mp_act->account = mp_obj_get_uint(action_obj[0]);
+            mp_act->name    = mp_obj_get_uint(action_obj[1]);
+
+            if (action_obj[2] != mp_const_none) {
+               mp_act->auth = (uint64_t*)mp_obj_str_get_data(action_obj[2], &mp_act->auth_len);
+               assert((mp_act->auth_len % (sizeof(uint64_t)*2)) == 0); // 8 bytes alignment
+               mp_act->auth_len /= sizeof(uint64_t);
+            }
+
+            mp_act->data = (unsigned char*)mp_obj_str_get_data(action_obj[3], &mp_act->data_len);
+
+            trx.actions[i] = mp_act;
+         }
+      }
+   }
+
+   send_deferred( sender_id, payer, &trx );
+
+
+   if (trx.context_free_actions) {
+      if (trx.free_actions_len > 0) {
+         for (int i=0;i<trx.free_actions_len;i++) {
+            free(trx.context_free_actions[i]);
+         }
+      }
+      free(trx.context_free_actions);
+   }
+
+   if (trx.actions) {
+      if (trx.actions_len > 0) {
+         for (int i=0;i<trx.actions_len;i++) {
+            free(trx.actions[i]);
+         }
+      }
+      free(trx.actions);
+   }
+
+   return mp_const_none;
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_VAR(mod_eoslib_send_deferred_obj, 11, mod_eoslib_send_deferred);
+
+
+STATIC mp_obj_t mod_eoslib_cancel_deferred(size_t n_args, const mp_obj_t *args) {
+
+   uint128_t sender_id;
+   size_t sender_id_len;
+   const char* id = mp_obj_str_get_data(args[0], &sender_id_len);
+   assert(sender_id_len == 16);
+   memcpy(&sender_id, id, sender_id_len);
+
+   cancel_deferred( sender_id );
+
+   return mp_const_none;
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_VAR(mod_eoslib_cancel_deferred_obj, 1, mod_eoslib_cancel_deferred);
 
 
 
@@ -701,6 +846,14 @@ STATIC const mp_rom_map_elem_t mp_module_eoslib_globals_table[] = {
 	 { MP_ROM_QSTR(MP_QSTR_db_upperbound_i64), MP_ROM_PTR(&mod_eoslib_db_upperbound_i64_obj) },
 	 { MP_ROM_QSTR(MP_QSTR_db_end_i64), MP_ROM_PTR(&mod_eoslib_db_end_i64_obj) },
 	 { MP_ROM_QSTR(MP_QSTR_hash64), MP_ROM_PTR(&mod_eoslib_hash64_obj) },
+
+    { MP_ROM_QSTR(MP_QSTR_send_inline), MP_ROM_PTR(&mod_eoslib_send_inline_obj) },
+    { MP_ROM_QSTR(MP_QSTR_send_context_free_inline), MP_ROM_PTR(&mod_eoslib_send_context_free_inline_obj) },
+    { MP_ROM_QSTR(MP_QSTR_send_deferred), MP_ROM_PTR(&mod_eoslib_send_deferred_obj) },
+
+    { MP_ROM_QSTR(MP_QSTR_cancel_deferred), MP_ROM_PTR(&mod_eoslib_cancel_deferred_obj) },
+
+    { MP_ROM_QSTR(MP_QSTR_eosio_delay), MP_ROM_PTR(&mod_eoslib_eosio_delay_obj) },
 
 	 { MP_ROM_QSTR(MP_QSTR_S), MP_ROM_PTR(&mod_eoslib_S_obj) },
 };
