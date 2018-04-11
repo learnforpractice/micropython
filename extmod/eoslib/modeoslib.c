@@ -1,21 +1,68 @@
 #include "modeoslib.h"
 
 #if MICROPY_PY_EOSLIB
-static struct eosapi s_eosapi;
+static struct eosapi api;
 
-void register_eosapi(struct eosapi * api) {
-	s_eosapi = *api;
+mp_obj_t micropy_load_from_py(const char *mod_name, const char *data, size_t len);
+mp_obj_t micropy_load_from_mpy(const char *mod_name, const char *data, size_t len);
+mp_obj_t micropy_call_0(mp_obj_t module_obj, const char *func);
+mp_obj_t micropy_call_2(mp_obj_t module_obj, const char *func, uint64_t code, uint64_t type);
+
+//in mp_compiler.c
+int compile_and_save_to_buffer(const char* src_name, const char *src_buffer, size_t src_size, char* buffer, size_t size);
+
+//defined in vm.c
+void execution_start();
+void execution_end();
+
+//main_eos.c
+int main_micropython(int argc, char **argv);
+mp_obj_t mp_call_function_0(mp_obj_t fun);
+mp_obj_t mp_compile(mp_parse_tree_t *parse_tree, qstr source_file, uint emit_opt, bool is_repl);
+
+
+void mp_register_eosapi(struct eosapi * _api) {
+	api = *_api;
+}
+
+struct eosapi* mp_get_eosapi(struct eosapi * _api) {
+   return &api;
+}
+
+//main_eos.c
+void* execute_from_str(const char *str);
+
+void mp_obtain_mpapi(struct mpapi * _api) {
+   if (!_api) {
+      return;
+   }
+   _api->mp_obj_new_str = mp_obj_new_str;
+   _api->micropy_load_from_py = micropy_load_from_py;
+   _api->micropy_load_from_mpy = micropy_load_from_mpy;
+   _api->micropy_call_0 = micropy_call_0;
+   _api->micropy_call_2 = micropy_call_2;
+   _api->execute_from_str = execute_from_str;
+
+   _api->execution_start = execution_start;
+   _api->execution_end = execution_end;
+
+   _api->main_micropython = main_micropython;
+   _api->mp_call_function_0 = mp_call_function_0;
+   _api->mp_compile = mp_compile;
+
+   _api->compile_and_save_to_buffer = compile_and_save_to_buffer;
+
 }
 
 mp_uint_t mp_obj_get_uint(mp_const_obj_t self_in);
 
 STATIC mp_obj_t mod_eoslib_now(void) {
-   return mp_obj_new_int(now());
+   return mp_obj_new_int(api.now());
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_0(mod_eoslib_now_obj, mod_eoslib_now);
 
 STATIC mp_obj_t mod_eoslib_abort(void) {
-   abort_();
+   api.abort_();
    return mp_const_none;
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_0(mod_eoslib_abort_obj, mod_eoslib_abort);
@@ -24,15 +71,14 @@ STATIC mp_obj_t mod_eoslib_eosio_assert(mp_obj_t obj1, mp_obj_t obj2) {
 	size_t len;
 	int condition = mp_obj_get_int(obj1);
    const char* str = mp_obj_str_get_data(obj2, &len);
-   eosio_assert(condition, str);
+   api.eosio_assert(condition, str);
 	return mp_const_none;
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_2(mod_eoslib_eosio_assert_obj, mod_eoslib_eosio_assert);
 
-void eosio_delay(int ms);
 STATIC mp_obj_t mod_eoslib_eosio_delay(mp_obj_t obj1) {
    int ms = mp_obj_get_int(obj1);
-   eosio_delay(ms);
+   api.eosio_delay(ms);
    return mp_const_none;
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(mod_eoslib_eosio_delay_obj, mod_eoslib_eosio_delay);
@@ -50,7 +96,7 @@ STATIC mp_obj_t mod_eoslib_assert_recover_key(mp_obj_t obj1, mp_obj_t obj2, mp_o
    data = mp_obj_str_get_data(obj1, &data_len);
    sig = mp_obj_str_get_data(obj2, &siglen);
    pub = mp_obj_str_get_data(obj3, &publen);
-   assert_recover_key( data, data_len, sig, siglen, pub, publen );
+   api.assert_recover_key( data, data_len, sig, siglen, pub, publen );
 	return mp_const_none;
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_3(mod_eoslib_assert_recover_key_obj, mod_eoslib_assert_recover_key);
@@ -64,7 +110,7 @@ STATIC mp_obj_t mod_eoslib_recover_key(mp_obj_t obj1, mp_obj_t obj2) {
 
    data = mp_obj_str_get_data(obj1, &data_len);
    sig = mp_obj_str_get_data(obj2, &siglen);
-   return recover_key( data, data_len, sig, siglen );
+   return api.recover_key( data, data_len, sig, siglen );
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_2(mod_eoslib_recover_key_obj, mod_eoslib_recover_key);
 
@@ -77,7 +123,7 @@ STATIC mp_obj_t mod_eoslib_assert_##METHOD(mp_obj_t obj1, mp_obj_t obj2) { \
 	size_t hash_len; \
    data = mp_obj_str_get_data(obj2, &datalen); \
 	hash = mp_obj_str_get_data(obj2, &hash_len); \
-	assert_##METHOD(data, datalen, hash, hash_len); \
+	api.assert_##METHOD(data, datalen, hash, hash_len); \
 	return mp_const_none; \
 } \
 STATIC MP_DEFINE_CONST_FUN_OBJ_2(mod_eoslib_assert_##METHOD##_obj, mod_eoslib_assert_##METHOD);
@@ -92,7 +138,7 @@ STATIC mp_obj_t mod_eoslib_##METHOD(mp_obj_t obj1) { \
 	const char* data; \
 	size_t data_len; \
    data = mp_obj_str_get_data(obj1, &data_len); \
-   return METHOD( data, data_len); \
+   return api.METHOD( data, data_len); \
 } \
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(mod_eoslib_##METHOD##_obj, mod_eoslib_##METHOD);
 
@@ -105,7 +151,7 @@ HASH_METHOD(ripemd160)
 STATIC mp_obj_t mod_eoslib_s2n(mp_obj_t obj) {
    size_t len;
    const char *account = mp_obj_str_get_data(obj, &len);
-   uint64_t n = string_to_uint64_(account);
+   uint64_t n = api.string_to_uint64_(account);
    return mp_obj_new_int_from_ll(n);
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(mod_eoslib_s2n_obj, mod_eoslib_s2n);
@@ -113,7 +159,7 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_1(mod_eoslib_s2n_obj, mod_eoslib_s2n);
 STATIC mp_obj_t mod_eoslib_N(mp_obj_t obj) {
    size_t len;
    const char *account = mp_obj_str_get_data(obj, &len);
-   uint64_t n = string_to_uint64_(account);
+   uint64_t n = api.string_to_uint64_(account);
    return mp_obj_new_int_from_ll(n);
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(mod_eoslib_N_obj, mod_eoslib_N);
@@ -121,21 +167,21 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_1(mod_eoslib_N_obj, mod_eoslib_N);
 
 STATIC mp_obj_t mod_eoslib_n2s(mp_obj_t obj) {
    uint64_t n = mp_obj_get_uint(obj);
-   return uint64_to_string_(n);
+   return api.uint64_to_string_(n);
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(mod_eoslib_n2s_obj, mod_eoslib_n2s);
 
 STATIC mp_obj_t mod_eoslib_pack(mp_obj_t obj) {
    size_t len = 0;
    const char *s = mp_obj_str_get_data(obj, &len);
-   return pack_(s, len);
+   return api.pack_(s, len);
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(mod_eoslib_pack_obj, mod_eoslib_pack);
 
 STATIC mp_obj_t mod_eoslib_unpack(mp_obj_t obj) {
    size_t len = 0;
    const char *s = mp_obj_str_get_data(obj, &len);
-   return unpack_(s, len);
+   return api.unpack_(s, len);
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(mod_eoslib_unpack_obj, mod_eoslib_unpack);
 
@@ -147,7 +193,7 @@ STATIC mp_obj_t mod_eoslib_db_store_i64(size_t n_args, const mp_obj_t *args) {
    uint64_t payer = mp_obj_get_uint(args[2]);
    uint64_t id = mp_obj_get_uint(args[3]);
    void* value = (void *)mp_obj_str_get_data(args[4], &value_len);
-   int itr = db_store_i64(scope, table, payer, id, value, value_len);
+   int itr = api.db_store_i64(scope, table, payer, id, value, value_len);
    return mp_obj_new_int(itr);
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_VAR(mod_eoslib_db_store_i64_obj, 5, mod_eoslib_db_store_i64);
@@ -157,14 +203,14 @@ STATIC mp_obj_t mod_eoslib_db_update_i64(size_t n_args, const mp_obj_t *args) {
    uint64_t itr = mp_obj_get_uint(args[0]);
    uint64_t payer = mp_obj_get_uint(args[1]);
    void* value = (void *)mp_obj_str_get_data(args[2], &value_len);
-   db_update_i64(itr, payer, value, value_len);
+   api.db_update_i64(itr, payer, value, value_len);
    return mp_const_none;
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_VAR(mod_eoslib_db_update_i64_obj, 3, mod_eoslib_db_update_i64);
 
 STATIC mp_obj_t mod_eoslib_db_remove_i64(size_t n_args, const mp_obj_t *args) {
    uint64_t itr = mp_obj_get_uint(args[0]);
-   db_remove_i64(itr);
+   api.db_remove_i64(itr);
    return mp_const_none;
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_VAR(mod_eoslib_db_remove_i64_obj, 1, mod_eoslib_db_remove_i64);
@@ -172,7 +218,7 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_VAR(mod_eoslib_db_remove_i64_obj, 1, mod_eoslib_d
 STATIC mp_obj_t mod_eoslib_db_get_i64(size_t n_args, const mp_obj_t *args) {
    char value[256];
    uint64_t itr = mp_obj_get_uint(args[0]);
-   int size = db_get_i64(itr, value, sizeof(value));
+   int size = api.db_get_i64(itr, value, sizeof(value));
    if (size <= 0) {
 		return mp_const_none;
    }
@@ -183,7 +229,7 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_VAR(mod_eoslib_db_get_i64_obj, 1, mod_eoslib_db_g
 STATIC mp_obj_t mod_eoslib_db_next_i64(size_t n_args, const mp_obj_t *args) {
    uint64_t primary = 0;
    uint64_t itr = mp_obj_get_uint(args[0]);
-   int itr_next = db_next_i64(itr, &primary);
+   int itr_next = api.db_next_i64(itr, &primary);
 
    mp_obj_tuple_t *tuple = mp_obj_new_tuple(2, NULL);
    tuple->items[0] = mp_obj_new_int(itr_next);
@@ -195,7 +241,7 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_VAR(mod_eoslib_db_next_i64_obj, 1, mod_eoslib_db_
 STATIC mp_obj_t mod_eoslib_db_previous_i64(size_t n_args, const mp_obj_t *args) {
    uint64_t primary = 0;
    uint64_t itr = mp_obj_get_uint(args[0]);
-   int itr_pre = db_previous_i64(itr, &primary);
+   int itr_pre = api.db_previous_i64(itr, &primary);
 
    mp_obj_tuple_t *tuple = mp_obj_new_tuple(2, NULL);
    tuple->items[0] = mp_obj_new_int(itr_pre);
@@ -211,7 +257,7 @@ STATIC mp_obj_t mod_eoslib_db_find_i64(size_t n_args, const mp_obj_t *args) {
    uint64_t table = mp_obj_get_uint(args[2]);
    uint64_t id = mp_obj_get_uint(args[3]);
 
-   int itr = db_find_i64(code, scope, table, id);
+   int itr = api.db_find_i64(code, scope, table, id);
    return mp_obj_new_int(itr);
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_VAR(mod_eoslib_db_find_i64_obj, 4, mod_eoslib_db_find_i64);
@@ -221,7 +267,7 @@ STATIC mp_obj_t mod_eoslib_db_lowerbound_i64(size_t n_args, const mp_obj_t *args
    uint64_t scope = mp_obj_get_uint(args[1]);
    uint64_t table = mp_obj_get_uint(args[2]);
    uint64_t id = mp_obj_get_uint(args[3]);
-   int itr = db_lowerbound_i64(code, scope, table, id);
+   int itr = api.db_lowerbound_i64(code, scope, table, id);
 
    return mp_obj_new_int(itr);
 }
@@ -233,7 +279,7 @@ STATIC mp_obj_t mod_eoslib_db_upperbound_i64(size_t n_args, const mp_obj_t *args
    uint64_t table = mp_obj_get_uint(args[2]);
    uint64_t id = mp_obj_get_uint(args[3]);
 
-   int itr = db_upperbound_i64(code, scope, table, id);
+   int itr = api.db_upperbound_i64(code, scope, table, id);
    return mp_obj_new_int(itr);
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_VAR(mod_eoslib_db_upperbound_i64_obj, 4, mod_eoslib_db_upperbound_i64);
@@ -243,18 +289,18 @@ STATIC mp_obj_t mod_eoslib_db_end_i64(size_t n_args, const mp_obj_t *args) {
    uint64_t scope = mp_obj_get_uint(args[1]);
    uint64_t table = mp_obj_get_uint(args[2]);
 
-   int itr = db_end_i64(code, scope, table);
+   int itr = api.db_end_i64(code, scope, table);
    return mp_obj_new_int(itr);
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_VAR(mod_eoslib_db_end_i64_obj, 3, mod_eoslib_db_end_i64);
 
 STATIC mp_obj_t mod_eoslib_read_action(void) {
-	size_t size = action_size();
+	size_t size = api.action_size();
 	if (size == 0) {
 		return mp_const_none;
 	}
 	byte *data = calloc(size, 1);
-	read_action((char*)data, size);
+	api.read_action((char*)data, size);
 	mp_obj_t obj = mp_obj_new_bytes(data, size);
 	free(data);
    return obj;
@@ -266,7 +312,7 @@ int read_action(char* memory, size_t size);
 
 #define METHOD0(NAME) \
 STATIC mp_obj_t mod_eoslib_##NAME(void) { \
-   return mp_obj_new_int(NAME()); \
+   return mp_obj_new_int(api.NAME()); \
 } \
 STATIC MP_DEFINE_CONST_FUN_OBJ_0(mod_eoslib_##NAME##_obj, mod_eoslib_##NAME);
 
@@ -279,7 +325,7 @@ METHOD0(current_sender)
 #define METHOD1(NAME) \
 STATIC mp_obj_t mod_eoslib_##NAME(mp_obj_t obj1) { \
    uint64_t arg1 = mp_obj_get_uint(obj1); \
-   NAME(arg1); \
+   api.NAME(arg1); \
    return mp_const_none; \
 } \
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(mod_eoslib_##NAME##_obj, mod_eoslib_##NAME);
@@ -289,7 +335,7 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_1(mod_eoslib_##NAME##_obj, mod_eoslib_##NAME);
 STATIC mp_obj_t mod_eoslib_##NAME(mp_obj_t obj1, mp_obj_t obj2) { \
    uint64_t arg1 = mp_obj_get_uint(obj1); \
    uint64_t arg2 = mp_obj_get_uint(obj2); \
-   NAME(arg1,arg2); \
+   api.NAME(arg1,arg2); \
    return mp_const_none; \
 } \
 STATIC MP_DEFINE_CONST_FUN_OBJ_2(mod_eoslib_##NAME##_obj, mod_eoslib_##NAME);
@@ -302,7 +348,7 @@ METHOD1(require_recipient)
 
 STATIC mp_obj_t mod_eoslib_is_account(mp_obj_t obj1) {
    uint64_t arg1 = mp_obj_get_uint(obj1);
-   if (is_account(arg1)) {
+   if (api.is_account(arg1)) {
    		return mp_const_true;
    }
    return mp_const_false;
@@ -336,7 +382,7 @@ STATIC mp_obj_t mod_eoslib_S(mp_obj_t obj1, mp_obj_t obj2) {
 
 	str = mp_obj_str_get_data(obj2, &len);
 
-	ret = string_to_symbol(precision, str);
+	ret = api.string_to_symbol(precision, str);
 	return mp_obj_new_int_from_ll(ret);
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_2(mod_eoslib_S_obj, mod_eoslib_S);
@@ -351,8 +397,8 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_2(mod_eoslib_S_obj, mod_eoslib_S);
          uint64_t payer = mp_obj_get_uint(args[2]); \
          uint64_t id = mp_obj_get_uint(args[3]); \
          secondary = (TYPE *)mp_obj_str_get_data(args[4], &value_len); \
-         eosio_assert(value_len == sizeof(TYPE), "bad length"); \
-         int itr = db_##IDX##_store(scope, table, payer, id, (const char*)secondary, value_len); \
+         api.eosio_assert(value_len == sizeof(TYPE), "bad length"); \
+         int itr = api.db_##IDX##_store(scope, table, payer, id, (const char*)secondary, value_len); \
          return mp_obj_new_int(itr); \
       } \
       STATIC MP_DEFINE_CONST_FUN_OBJ_VAR(mod_eoslib_db_##IDX##_store_obj, 5, mod_eoslib_db_##IDX##_store); \
@@ -363,14 +409,14 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_2(mod_eoslib_S_obj, mod_eoslib_S);
          uint64_t iterator = mp_obj_get_uint(args[0]); \
          uint64_t payer = mp_obj_get_uint(args[1]); \
          secondary = (TYPE *)mp_obj_str_get_data(args[2], &value_len); \
-         eosio_assert(value_len == sizeof(TYPE), "bad length"); \
-         db_##IDX##_update(iterator, payer, (const char*)secondary, value_len); \
+         api.eosio_assert(value_len == sizeof(TYPE), "bad length"); \
+         api.db_##IDX##_update(iterator, payer, (const char*)secondary, value_len); \
          return mp_const_none; \
       } \
       STATIC MP_DEFINE_CONST_FUN_OBJ_VAR(mod_eoslib_db_##IDX##_update_obj, 3, mod_eoslib_db_##IDX##_update); \
       STATIC mp_obj_t mod_eoslib_db_##IDX##_remove(size_t n_args, const mp_obj_t *args) { \
          uint64_t iterator = mp_obj_get_uint(args[0]); \
-         db_##IDX##_remove(iterator); \
+         api.db_##IDX##_remove(iterator); \
          return mp_const_none; \
       } \
       STATIC MP_DEFINE_CONST_FUN_OBJ_VAR(mod_eoslib_db_##IDX##_remove_obj, 3, mod_eoslib_db_##IDX##_remove); \
@@ -382,7 +428,7 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_2(mod_eoslib_S_obj, mod_eoslib_S);
          uint64_t scope = mp_obj_get_uint(args[1]); \
          uint64_t table = mp_obj_get_uint(args[2]); \
          secondary = (TYPE *)mp_obj_str_get_data(args[3], &value_len); \
-         int itr = db_##IDX##_find_secondary( code, scope, table, (const char*)secondary , sizeof(TYPE), &primary ); \
+         int itr = api.db_##IDX##_find_secondary( code, scope, table, (const char*)secondary , sizeof(TYPE), &primary ); \
          mp_obj_tuple_t *tuple = mp_obj_new_tuple(2, NULL); \
          tuple->items[0] = mp_obj_new_int(itr); \
          tuple->items[1] = mp_obj_new_int(primary); \
@@ -396,7 +442,7 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_2(mod_eoslib_S_obj, mod_eoslib_S);
          uint64_t scope = mp_obj_get_uint(args[1]); \
          uint64_t table = mp_obj_get_uint(args[2]); \
          primary = mp_obj_get_uint(args[3]); \
-         int itr = db_##IDX##_find_primary( code, scope, table, (char*)&secondary , sizeof(TYPE), primary ); \
+         int itr = api.db_##IDX##_find_primary( code, scope, table, (char*)&secondary , sizeof(TYPE), primary ); \
          mp_obj_t _secondary = mp_obj_new_bytes((byte*)&secondary, sizeof(secondary)); \
          mp_obj_tuple_t *tuple = mp_obj_new_tuple(2, NULL); \
          tuple->items[0] = mp_obj_new_int(itr); \
@@ -410,7 +456,7 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_2(mod_eoslib_S_obj, mod_eoslib_S);
          uint64_t code = mp_obj_get_uint(args[0]); \
          uint64_t scope = mp_obj_get_uint(args[1]); \
          uint64_t table = mp_obj_get_uint(args[2]); \
-         int itr = db_##IDX##_lowerbound( code, scope, table, (char*)&secondary , sizeof(TYPE), &primary ); \
+         int itr = api.db_##IDX##_lowerbound( code, scope, table, (char*)&secondary , sizeof(TYPE), &primary ); \
          mp_obj_t _secondary = mp_obj_new_bytes((byte*)&secondary, sizeof(TYPE)); \
          mp_obj_tuple_t *tuple = mp_obj_new_tuple(3, NULL); \
          tuple->items[0] = mp_obj_new_int(itr); \
@@ -426,7 +472,7 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_2(mod_eoslib_S_obj, mod_eoslib_S);
          uint64_t code = mp_obj_get_uint(args[0]); \
          uint64_t scope = mp_obj_get_uint(args[1]); \
          uint64_t table = mp_obj_get_uint(args[2]); \
-         int itr = db_##IDX##_upperbound( code, scope, table, (char*)&secondary , sizeof(TYPE), &primary ); \
+         int itr = api.db_##IDX##_upperbound( code, scope, table, (char*)&secondary , sizeof(TYPE), &primary ); \
          mp_obj_t _secondary = mp_obj_new_bytes((byte*)&secondary, sizeof(TYPE)); \
          mp_obj_tuple_t *tuple = mp_obj_new_tuple(3, NULL); \
          tuple->items[0] = mp_obj_new_int(itr); \
@@ -439,7 +485,7 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_2(mod_eoslib_S_obj, mod_eoslib_S);
          uint64_t code = mp_obj_get_uint(args[0]); \
          uint64_t scope = mp_obj_get_uint(args[1]); \
          uint64_t table = mp_obj_get_uint(args[2]); \
-         int itr = db_##IDX##_end( code, scope, table ); \
+         int itr = api.db_##IDX##_end( code, scope, table ); \
          return mp_obj_new_int(itr); \
       } \
       STATIC MP_DEFINE_CONST_FUN_OBJ_VAR(mod_eoslib_db_##IDX##_end_obj, 3, mod_eoslib_db_##IDX##_end); \
@@ -447,7 +493,7 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_2(mod_eoslib_S_obj, mod_eoslib_S);
       STATIC mp_obj_t mod_eoslib_db_##IDX##_next(size_t n_args, const mp_obj_t *args) { \
          uint64_t primary = 0;\
          uint64_t iterator = mp_obj_get_uint(args[0]); \
-         int itr = db_##IDX##_next(iterator, &primary); \
+         int itr = api.db_##IDX##_next(iterator, &primary); \
          mp_obj_tuple_t *tuple = mp_obj_new_tuple(2, NULL); \
          tuple->items[0] = mp_obj_new_int(itr); \
          tuple->items[1] = mp_obj_new_int(primary); \
@@ -457,7 +503,7 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_2(mod_eoslib_S_obj, mod_eoslib_S);
       STATIC mp_obj_t mod_eoslib_db_##IDX##_previous(size_t n_args, const mp_obj_t *args) { \
          uint64_t primary = 0;\
          uint64_t iterator = mp_obj_get_uint(args[0]); \
-         int itr = db_##IDX##_previous(iterator, &primary); \
+         int itr = api.db_##IDX##_previous(iterator, &primary); \
          mp_obj_tuple_t *tuple = mp_obj_new_tuple(2, NULL); \
          tuple->items[0] = mp_obj_new_int(itr); \
          tuple->items[1] = mp_obj_new_int(primary); \
@@ -475,8 +521,8 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_2(mod_eoslib_S_obj, mod_eoslib_S);
          uint64_t payer = mp_obj_get_uint(args[2]); \
          uint64_t id = mp_obj_get_uint(args[3]); \
          secondary = (ARR_ELEMENT_TYPE *)mp_obj_str_get_data(args[4], &value_len); \
-         eosio_assert(value_len == sizeof(ARR_ELEMENT_TYPE)*ARR_SIZE, "bad length"); \
-         int itr = db_##IDX##_store(scope, table, payer, id, (const char*)secondary, value_len); \
+         api.eosio_assert(value_len == sizeof(ARR_ELEMENT_TYPE)*ARR_SIZE, "bad length"); \
+         int itr = api.db_##IDX##_store(scope, table, payer, id, (const char*)secondary, value_len); \
          return mp_obj_new_int(itr); \
       } \
       STATIC MP_DEFINE_CONST_FUN_OBJ_VAR(mod_eoslib_db_##IDX##_store_obj, 5, mod_eoslib_db_##IDX##_store); \
@@ -487,14 +533,14 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_2(mod_eoslib_S_obj, mod_eoslib_S);
          uint64_t iterator = mp_obj_get_uint(args[0]); \
          uint64_t payer = mp_obj_get_uint(args[1]); \
          secondary = (ARR_ELEMENT_TYPE *)mp_obj_str_get_data(args[2], &value_len); \
-         eosio_assert(value_len == sizeof(ARR_ELEMENT_TYPE)*ARR_SIZE, "bad length"); \
-         db_##IDX##_update(iterator, payer, (const char*)secondary, value_len); \
+         api.eosio_assert(value_len == sizeof(ARR_ELEMENT_TYPE)*ARR_SIZE, "bad length"); \
+         api.db_##IDX##_update(iterator, payer, (const char*)secondary, value_len); \
          return mp_const_none; \
       } \
       STATIC MP_DEFINE_CONST_FUN_OBJ_VAR(mod_eoslib_db_##IDX##_update_obj, 3, mod_eoslib_db_##IDX##_update); \
       STATIC mp_obj_t mod_eoslib_db_##IDX##_remove(size_t n_args, const mp_obj_t *args) { \
          uint64_t iterator = mp_obj_get_uint(args[0]); \
-         db_##IDX##_remove(iterator); \
+         api.db_##IDX##_remove(iterator); \
          return mp_const_none; \
       } \
       STATIC MP_DEFINE_CONST_FUN_OBJ_VAR(mod_eoslib_db_##IDX##_remove_obj, 3, mod_eoslib_db_##IDX##_remove); \
@@ -506,7 +552,7 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_2(mod_eoslib_S_obj, mod_eoslib_S);
          uint64_t scope = mp_obj_get_uint(args[1]); \
          uint64_t table = mp_obj_get_uint(args[2]); \
          secondary = (ARR_ELEMENT_TYPE *)mp_obj_str_get_data(args[3], &value_len); \
-         int itr = db_##IDX##_find_secondary( code, scope, table, (const char*)secondary , sizeof(ARR_ELEMENT_TYPE)*ARR_SIZE, &primary ); \
+         int itr = api.db_##IDX##_find_secondary( code, scope, table, (const char*)secondary , sizeof(ARR_ELEMENT_TYPE)*ARR_SIZE, &primary ); \
          mp_obj_tuple_t *tuple = mp_obj_new_tuple(2, NULL); \
          tuple->items[0] = mp_obj_new_int(itr); \
          tuple->items[1] = mp_obj_new_int(primary); \
@@ -520,7 +566,7 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_2(mod_eoslib_S_obj, mod_eoslib_S);
          uint64_t scope = mp_obj_get_uint(args[1]); \
          uint64_t table = mp_obj_get_uint(args[2]); \
          primary = mp_obj_get_uint(args[3]); \
-         int itr = db_##IDX##_find_primary( code, scope, table, (char*)&secondary , sizeof(ARR_ELEMENT_TYPE)*ARR_SIZE, primary ); \
+         int itr = api.db_##IDX##_find_primary( code, scope, table, (char*)&secondary , sizeof(ARR_ELEMENT_TYPE)*ARR_SIZE, primary ); \
          mp_obj_t _secondary = mp_obj_new_bytes((byte*)&secondary, sizeof(secondary)); \
          mp_obj_tuple_t *tuple = mp_obj_new_tuple(2, NULL); \
          tuple->items[0] = mp_obj_new_int(itr); \
@@ -534,7 +580,7 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_2(mod_eoslib_S_obj, mod_eoslib_S);
          uint64_t code = mp_obj_get_uint(args[0]); \
          uint64_t scope = mp_obj_get_uint(args[1]); \
          uint64_t table = mp_obj_get_uint(args[2]); \
-         int itr = db_##IDX##_lowerbound( code, scope, table, (char*)&secondary , sizeof(ARR_ELEMENT_TYPE)*ARR_SIZE, &primary ); \
+         int itr = api.db_##IDX##_lowerbound( code, scope, table, (char*)&secondary , sizeof(ARR_ELEMENT_TYPE)*ARR_SIZE, &primary ); \
          mp_obj_t _secondary = mp_obj_new_bytes((byte*)&secondary, sizeof(ARR_ELEMENT_TYPE)*ARR_SIZE); \
          mp_obj_tuple_t *tuple = mp_obj_new_tuple(3, NULL); \
          tuple->items[0] = mp_obj_new_int(itr); \
@@ -550,7 +596,7 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_2(mod_eoslib_S_obj, mod_eoslib_S);
          uint64_t code = mp_obj_get_uint(args[0]); \
          uint64_t scope = mp_obj_get_uint(args[1]); \
          uint64_t table = mp_obj_get_uint(args[2]); \
-         int itr = db_##IDX##_upperbound( code, scope, table, (char*)&secondary , sizeof(secondary), &primary ); \
+         int itr = api.db_##IDX##_upperbound( code, scope, table, (char*)&secondary , sizeof(secondary), &primary ); \
          mp_obj_t _secondary = mp_obj_new_bytes((byte*)&secondary, sizeof(secondary)); \
          mp_obj_tuple_t *tuple = mp_obj_new_tuple(3, NULL); \
          tuple->items[0] = mp_obj_new_int(itr); \
@@ -563,7 +609,7 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_2(mod_eoslib_S_obj, mod_eoslib_S);
          uint64_t code = mp_obj_get_uint(args[0]); \
          uint64_t scope = mp_obj_get_uint(args[1]); \
          uint64_t table = mp_obj_get_uint(args[2]); \
-         int itr = db_##IDX##_end( code, scope, table ); \
+         int itr = api.db_##IDX##_end( code, scope, table ); \
          return mp_obj_new_int(itr); \
       } \
       STATIC MP_DEFINE_CONST_FUN_OBJ_VAR(mod_eoslib_db_##IDX##_end_obj, 3, mod_eoslib_db_##IDX##_end); \
@@ -571,7 +617,7 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_2(mod_eoslib_S_obj, mod_eoslib_S);
       STATIC mp_obj_t mod_eoslib_db_##IDX##_next(size_t n_args, const mp_obj_t *args) { \
          uint64_t primary = 0;\
          uint64_t iterator = mp_obj_get_uint(args[0]); \
-         int itr = db_##IDX##_next(iterator, &primary); \
+         int itr = api.db_##IDX##_next(iterator, &primary); \
          mp_obj_tuple_t *tuple = mp_obj_new_tuple(2, NULL); \
          tuple->items[0] = mp_obj_new_int(itr); \
          tuple->items[1] = mp_obj_new_int(primary); \
@@ -581,7 +627,7 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_2(mod_eoslib_S_obj, mod_eoslib_S);
       STATIC mp_obj_t mod_eoslib_db_##IDX##_previous(size_t n_args, const mp_obj_t *args) { \
          uint64_t primary = 0;\
          uint64_t iterator = mp_obj_get_uint(args[0]); \
-         int itr = db_##IDX##_previous(iterator, &primary); \
+         int itr = api.db_##IDX##_previous(iterator, &primary); \
          mp_obj_tuple_t *tuple = mp_obj_new_tuple(2, NULL); \
          tuple->items[0] = mp_obj_new_int(itr); \
          tuple->items[1] = mp_obj_new_int(primary); \
@@ -604,7 +650,7 @@ STATIC mp_obj_t mod_eoslib_send_inline(size_t n_args, const mp_obj_t *args) {
 
    mp_act.data = (unsigned char*)mp_obj_str_get_data(args[3], &mp_act.data_len);
 
-   send_inline(&mp_act);
+   api.send_inline(&mp_act);
    return mp_const_none;
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_VAR(mod_eoslib_send_inline_obj, 3, mod_eoslib_send_inline);
@@ -623,7 +669,7 @@ STATIC mp_obj_t mod_eoslib_send_context_free_inline(size_t n_args, const mp_obj_
 
    mp_act.data = (unsigned char*)mp_obj_str_get_data(args[3], &mp_act.data_len);
 
-   send_context_free_inline(&mp_act);
+   api.send_context_free_inline(&mp_act);
    return mp_const_none;
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_VAR(mod_eoslib_send_context_free_inline_obj, 3, mod_eoslib_send_context_free_inline);
@@ -711,7 +757,7 @@ STATIC mp_obj_t mod_eoslib_send_deferred(size_t n_args, const mp_obj_t *args) {
       }
    }
 
-   send_deferred( sender_id, payer, &trx );
+   api.send_deferred( sender_id, payer, &trx );
 
 
    if (trx.context_free_actions) {
@@ -745,7 +791,7 @@ STATIC mp_obj_t mod_eoslib_cancel_deferred(size_t n_args, const mp_obj_t *args) 
    assert(sender_id_len == 16);
    memcpy(&sender_id, id, sender_id_len);
 
-   cancel_deferred( sender_id );
+   api.cancel_deferred( sender_id );
 
    return mp_const_none;
 }

@@ -10,6 +10,8 @@ extern "C" {
 #include "xxhash.h"
 #include "py/obj.h"
 #include "py/objstr.h"
+#include "py/lexer.h"
+#include "py/compile.h"
 
 
 #ifdef __cplusplus

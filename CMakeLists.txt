@@ -13,10 +13,8 @@ add_custom_command(
     DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/extmod/eoslib/modeoslib.c
 )
 
-add_library( micropython
-             STATIC
-${CMAKE_CURRENT_SOURCE_DIR}/ports/unix/build/frozen.c
-${CMAKE_CURRENT_SOURCE_DIR}/ports/unix/build/frozen_mpy.c
+set (SRC_FILES ${CMAKE_CURRENT_SOURCE_DIR}/ports/unix/build/frozen.c
+    ${CMAKE_CURRENT_SOURCE_DIR}/ports/unix/build/frozen_mpy.c
 
 #ports/unix/build/py/emitnx64.o
 #ports/unix/mpthreadport.c
@@ -52,18 +50,20 @@ ${CMAKE_CURRENT_SOURCE_DIR}/ports/unix/build/frozen_mpy.c
 #extmod/modframebuf.c
 #extmod/rai/modrailib.c
 
-py/mp_compiler.c
-extmod/eoslib/modeoslib.c
-extmod/crypto-algorithms/xxhash.c
-ports/unix/main_eos.c
-ports/unix/gccollect.c
-ports/unix/unix_mphal.c
-ports/unix/input.c
-ports/unix/file.c
-ports/unix/modmachine.c
-ports/unix/modos.c
-ports/unix/modtime.c
-ports/unix/moduselect.c
+    py/mp_compiler.c
+    extmod/eoslib/modeoslib.c
+    extmod/eoslib/frozenmod.cpp
+    extmod/crypto-algorithms/xxhash.c
+    ports/unix/main_eos.c
+    ports/unix/gccollect.c
+    ports/unix/unix_mphal.c
+    ports/unix/input.c
+    ports/unix/file.c
+    ports/unix/modmachine.c
+    ports/unix/modos.c
+    ports/unix/modtime.c
+    ports/unix/moduselect.c
+    
     py/mpstate.c
     py/nlrx64.c
     py/nlr.c
@@ -148,7 +148,7 @@ ports/unix/moduselect.c
     py/showbc.c
     py/repl.c
     py/smallint.c
-    py/frozenmod.c
+#    py/frozenmod.c
     extmod/moductypes.c
     extmod/modujson.c
     extmod/modure.c
@@ -174,28 +174,45 @@ ports/unix/moduselect.c
              ${HEADERS}
 )
 
+set (INCLUDE_DIRS   PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/py
+                    PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/extmod
+                    PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/extmod/crypto-algorithms
+                    PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/ports/unix
+                    PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/ports/unix/build
+                    PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
+
+add_library( micropython1 SHARED  ${SRC_FILES} )
 if (APPLE)
-    target_link_libraries( micropython PUBLIC  intl dl util)
+    target_link_libraries( micropython1 PUBLIC  intl dl util)
 else()
-    target_link_libraries( micropython PUBLIC dl util)
+    target_link_libraries( micropython1 PUBLIC dl util)
 endif()
+target_include_directories( micropython1 ${INCLUDE_DIRS} )
 
 
+add_library( micropython2 SHARED ${SRC_FILES} )
+if (APPLE)
+    target_link_libraries( micropython2 PUBLIC  intl dl util )
+else()
+    target_link_libraries( micropython2 PUBLIC dl util )
+endif()
+target_include_directories( micropython2 ${INCLUDE_DIRS} )
 
-target_include_directories( micropython
-                            PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/py
-                            PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/extmod
-                            PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/extmod/crypto-algorithms
-                            PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/ports/unix
-                            PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/ports/unix/build
-                            PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}
-                            )
+add_library( micropython3 SHARED ${SRC_FILES} )
+if (APPLE)
+    target_link_libraries( micropython3 PUBLIC  intl dl util )
+else()
+    target_link_libraries( micropython3 PUBLIC dl util )
+endif()
+target_include_directories( micropython3 ${INCLUDE_DIRS} )
+
 
 INSTALL( TARGETS
-   micropython
+   micropython2
 
    RUNTIME DESTINATION bin
    LIBRARY DESTINATION lib
    ARCHIVE DESTINATION lib
 )
+
 
