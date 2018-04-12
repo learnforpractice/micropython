@@ -71,12 +71,16 @@ unsigned int nlr_push(nlr_buf_t *nlr) {
     "movq   %r14, 64(%rdi)      \n" // store %r14 into nlr_buf
     "movq   %r15, 72(%rdi)      \n" // store %r15 into nlr_buf
     #if defined(__APPLE__) || defined(__MACH__)
-    "jmp    _nlr_push_tail      \n" // do the rest in C
+          "jmp    _nlr_push_tail      \n" // do the rest in C
     #else
-    "jmp    nlr_push_tail       \n" // do the rest in C
+      #if defined(SHARED_MICROPYTHON)
+            "jmp    nlr_push_tail@plt      \n" // do the rest in C
+      #else
+          "jmp    nlr_push_tail      \n" // do the rest in C
+      #endif
     #endif
     );
-
+//
     #endif
 
     return 0; // needed to silence compiler warning
