@@ -95,7 +95,7 @@ int mp_find_frozen_module(const char *mod_name, size_t len, void **data) {
          *data = raw_code;
          ret = MP_FROZEN_MPY;
       } else {
-         assert(false);
+         mp_get_eosapi()->eosio_assert(false, "unknown code!");
       }
    }
    return ret;
