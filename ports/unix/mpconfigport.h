@@ -88,14 +88,14 @@
 #define MICROPY_PY_REVERSE_SPECIAL_METHODS (1)
 #define MICROPY_PY_ARRAY_SLICE_ASSIGN (1)
 #define MICROPY_PY_BUILTINS_SLICE_ATTRS (1)
-#define MICROPY_PY_SYS_EXIT         (1)
+//#define MICROPY_PY_SYS_EXIT         (1)
 #if defined(__APPLE__) && defined(__MACH__)
     #define MICROPY_PY_SYS_PLATFORM  "darwin"
 #else
     #define MICROPY_PY_SYS_PLATFORM  "linux"
 #endif
 #define MICROPY_PY_SYS_MAXSIZE      (1)
-#define MICROPY_PY_SYS_STDFILES     (1)
+//#define MICROPY_PY_SYS_STDFILES     (1)
 #define MICROPY_PY_SYS_EXC_INFO     (1)
 //#define MICROPY_PY_COLLECTIONS_DEQUE (1)
 //#define MICROPY_PY_COLLECTIONS_ORDEREDDICT (1)
@@ -103,6 +103,9 @@
 #define MICROPY_PY_MATH_SPECIAL_FUNCTIONS (1)
 #endif
 #define MICROPY_PY_SYS              (0)
+#define MICROPY_PY_SYS_EXIT         (0)
+#define MICROPY_PY_SYS_STDFILES     (0)
+
 #define MICROPY_PY_IO               (0)
 #define MICROPY_PY_IO_BYTESIO       (1)
 #define MICROPY_PY_IO_FILEIO        (0)

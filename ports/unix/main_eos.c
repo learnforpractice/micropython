@@ -619,7 +619,6 @@ void print_time()
 
 void* execute_from_str(const char *str) {
     nlr_buf_t nlr;
-    printf("execute_from_str\n");
     if (nlr_push(&nlr) == 0) {
         mp_lexer_t *lex = mp_lexer_new_from_str_len(0/*MP_QSTR_*/, str, strlen(str), false);
         mp_parse_tree_t pt = mp_parse(lex, MP_PARSE_FILE_INPUT);

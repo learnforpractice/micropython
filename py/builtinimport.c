@@ -233,7 +233,7 @@ STATIC void do_load(mp_obj_t module_obj, vstr_t *file) {
     #if MICROPY_MODULE_FROZEN || MICROPY_PERSISTENT_CODE_LOAD || MICROPY_ENABLE_COMPILER
     char *file_str = vstr_null_terminated_str(file);
     #endif
-
+    printf("+++++++++do_load: %s\n",file_str);
     // If we support frozen modules (either as str or mpy) then try to find the
     // requested filename in the list of frozen module filenames.
     #if MICROPY_MODULE_FROZEN

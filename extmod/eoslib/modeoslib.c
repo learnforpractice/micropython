@@ -20,6 +20,15 @@ int main_micropython(int argc, char **argv);
 mp_obj_t mp_call_function_0(mp_obj_t fun);
 mp_obj_t mp_compile(mp_parse_tree_t *parse_tree, qstr source_file, uint emit_opt, bool is_repl);
 
+static int s_debug=0;
+
+int py_is_debug_mode() {
+   return s_debug;
+}
+
+void py_set_debug_mode(int mode) {
+   s_debug = mode;
+}
 
 void mp_register_eosapi(struct eosapi * _api) {
 	api = *_api;
@@ -51,6 +60,7 @@ void mp_obtain_mpapi(struct mpapi * _api) {
    _api->mp_compile = mp_compile;
 
    _api->compile_and_save_to_buffer = compile_and_save_to_buffer;
+   _api->set_debug_mode = py_set_debug_mode;
 
 }
 
@@ -225,6 +235,22 @@ STATIC mp_obj_t mod_eoslib_db_get_i64(size_t n_args, const mp_obj_t *args) {
    return mp_obj_new_bytes((byte*)value, size);
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_VAR(mod_eoslib_db_get_i64_obj, 1, mod_eoslib_db_get_i64);
+
+STATIC mp_obj_t mod_eoslib_db_get_i64_ex(size_t n_args, const mp_obj_t *args) {
+   char value[256];
+   uint64_t primary = 0;
+   uint64_t itr = mp_obj_get_uint(args[0]);
+   int size = api.db_get_i64_ex(itr, &primary, value, sizeof(value));
+   if (size <= 0) {
+      return mp_const_none;
+   }
+   mp_obj_tuple_t *tuple = mp_obj_new_tuple(2, NULL);
+   tuple->items[0] = mp_obj_new_int(primary);
+   tuple->items[1] = mp_obj_new_bytes((byte*)value, size);
+   return tuple;
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_VAR(mod_eoslib_db_get_i64_ex_obj, 1, mod_eoslib_db_get_i64_ex);
+
 
 STATIC mp_obj_t mod_eoslib_db_next_i64(size_t n_args, const mp_obj_t *args) {
    uint64_t primary = 0;
@@ -885,6 +911,7 @@ STATIC const mp_rom_map_elem_t mp_module_eoslib_globals_table[] = {
 	 { MP_ROM_QSTR(MP_QSTR_db_update_i64), MP_ROM_PTR(&mod_eoslib_db_update_i64_obj) },
 	 { MP_ROM_QSTR(MP_QSTR_db_remove_i64), MP_ROM_PTR(&mod_eoslib_db_remove_i64_obj) },
 	 { MP_ROM_QSTR(MP_QSTR_db_get_i64), MP_ROM_PTR(&mod_eoslib_db_get_i64_obj) },
+    { MP_ROM_QSTR(MP_QSTR_db_get_i64_ex), MP_ROM_PTR(&mod_eoslib_db_get_i64_ex_obj) },
 	 { MP_ROM_QSTR(MP_QSTR_db_previous_i64), MP_ROM_PTR(&mod_eoslib_db_previous_i64_obj) },
 	 { MP_ROM_QSTR(MP_QSTR_db_next_i64), MP_ROM_PTR(&mod_eoslib_db_next_i64_obj) },
 	 { MP_ROM_QSTR(MP_QSTR_db_find_i64), MP_ROM_PTR(&mod_eoslib_db_find_i64_obj) },

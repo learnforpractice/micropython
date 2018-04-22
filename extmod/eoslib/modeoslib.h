@@ -13,7 +13,8 @@ extern "C" {
 #include "py/lexer.h"
 #include "py/compile.h"
 
-
+int py_is_debug_mode();
+void py_set_debug_mode(int mode);
 #ifdef __cplusplus
 }
 #endif

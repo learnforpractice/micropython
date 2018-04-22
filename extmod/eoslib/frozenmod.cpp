@@ -40,21 +40,22 @@ extern "C" struct eosapi* mp_get_eosapi();
 
 extern "C" {
 
+
 static char code_data[1024*64];
+
 
 int mp_find_frozen_module(const char *mod_name, size_t len, void **data) {
 //   ilog("+++++++++mod_name: ${n}", ("n", mod_name));
+   if (py_is_debug_mode()) {
+      return MP_FROZEN_NONE;
+   }
+
    char path1[128];
    char path2[128];
    memset(path1, 0, sizeof(path1));
    memset(path2, 0, sizeof(path2));
 
    int ret = MP_FROZEN_NONE;
-   /*
-   if (get_debug_mode()) {
-      return MP_FROZEN_NONE;
-   }
-   */
 
    size_t path_num = mp_get_eosapi()->split_path(mod_name, path1, sizeof(path1)-1, path2, sizeof(path2)-1);
 //   ilog("${n}", ("n", _path.size()));
@@ -68,7 +69,8 @@ int mp_find_frozen_module(const char *mod_name, size_t len, void **data) {
    } else if (path_num == 2) {
       code = mp_get_eosapi()->string_to_uint64_(path1);
       id = XXH64(path2, strlen(path2), 0);
-//      ilog("+++++++++load code from account: ${n1} ${n2}", ("n1", _path[0])("n2", _path[1]));
+//      printf("+++++++++mp_find_frozen_module from account:%s %s\n", path1, path2);
+      //      ilog("+++++++++load code from account: ${n1} ${n2}", ("n1", _path[0])("n2", _path[1]));
    } else {
       return MP_FROZEN_NONE;
    }
@@ -108,11 +110,11 @@ const char *mp_find_frozen_str(const char *str, size_t *len) {
 
 mp_import_stat_t mp_frozen_stat(const char *mod_name) {
 //   ilog("+++++++++mod_name: ${n}", ("n",mod_name));
-/*
-   if (get_debug_mode()) {
+
+   if (py_is_debug_mode()) {
       return MP_IMPORT_STAT_NO_EXIST;
    }
-*/
+
    char path1[128];
    char path2[128];
    memset(path1, 0, sizeof(path1));
@@ -139,7 +141,7 @@ mp_import_stat_t mp_frozen_stat(const char *mod_name) {
    } else if (path_num == 2) {
       code = mp_get_eosapi()->string_to_uint64_(path1);
       id = XXH64(path2, strlen(path2), 0);
-//      ilog("+++++++++load code from account: ${n1} ${n2}", ("n1", _dirs[0])("n2", _dirs[1]));
+//      printf("+++++++++mp_frozen_stat: account:%s %s\n", path1, path2);
    } else {
       return MP_IMPORT_STAT_NO_EXIST;
    }
@@ -148,7 +150,8 @@ mp_import_stat_t mp_frozen_stat(const char *mod_name) {
 
    int itr = mp_get_eosapi()->db_find_i64(code, code, code, id);
    if (itr < 0) {
-         ret = MP_IMPORT_STAT_NO_EXIST;
+//      printf("mp_get_eosapi()->db_find_i64(code, code, code, id); not found\n");
+      ret = MP_IMPORT_STAT_NO_EXIST;
    } else {
       ret = MP_IMPORT_STAT_FILE;
    }
