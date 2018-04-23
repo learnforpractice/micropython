@@ -225,36 +225,41 @@ STATIC mp_obj_t mod_eoslib_db_remove_i64(size_t n_args, const mp_obj_t *args) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_VAR(mod_eoslib_db_remove_i64_obj, 1, mod_eoslib_db_remove_i64);
 
-///TODO: hard coded buffer size
-static char buffer[128*1024];
+
 STATIC mp_obj_t mod_eoslib_db_get_i64(size_t n_args, const mp_obj_t *args) {
+   char* buffer;
+   mp_obj_t ret;
    uint64_t itr = mp_obj_get_uint(args[0]);
-   int size = api.db_get_i64(itr, buffer, sizeof(buffer));
+   int size = api.db_get_i64(itr, (char*)0, 0);
    if (size <= 0) {
       return mp_const_none;
    }
-   if (size > sizeof(buffer)) {
-      size = sizeof(buffer);
-   }
-   return mp_obj_new_bytes((byte*)buffer, size);
+
+   buffer = (char*)malloc(size);
+   api.db_get_i64(itr, buffer, size);
+   ret = mp_obj_new_bytes((byte*)buffer, size);
+   free(buffer);
+   return ret;
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_VAR(mod_eoslib_db_get_i64_obj, 1, mod_eoslib_db_get_i64);
 
 STATIC mp_obj_t mod_eoslib_db_get_i64_ex(size_t n_args, const mp_obj_t *args) {
+   char* buffer;
    uint64_t primary = 0;
    uint64_t itr = mp_obj_get_uint(args[0]);
-   int size = api.db_get_i64_ex(itr, &primary, buffer, sizeof(buffer));
+   int size = api.db_get_i64_ex(itr, &primary, (char*)0, 0);
    if (size <= 0) {
       return mp_const_none;
    }
 
-   if (size > sizeof(buffer)) {
-      size = sizeof(buffer);
-   }
+   buffer = (char*)malloc(size);
+   api.db_get_i64_ex(itr, &primary, buffer, size);
 
    mp_obj_tuple_t *tuple = mp_obj_new_tuple(2, NULL);
    tuple->items[0] = mp_obj_new_int(primary);
    tuple->items[1] = mp_obj_new_bytes((byte*)buffer, size);
+   free(buffer);
+
    return tuple;
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_VAR(mod_eoslib_db_get_i64_ex_obj, 1, mod_eoslib_db_get_i64_ex);
