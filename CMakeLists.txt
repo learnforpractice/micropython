@@ -2,17 +2,25 @@
 
 file(GLOB HEADERS "py/*.h")
 
+
+
+add_custom_command(
+    OUTPUT ${CMAKE_CURRENT_SOURCE_DIR}/ports/unix/build/libaxtls.a
+    COMMAND make axtls
+    COMMENT "build axtls "
+    WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/ports/unix
+#    DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/ports/unix/mpconfigport.h
+)
+
 add_custom_command(
     OUTPUT ${CMAKE_CURRENT_SOURCE_DIR}/ports/unix/build/frozen.c 
     OUTPUT ${CMAKE_CURRENT_SOURCE_DIR}/ports/unix/build/frozen_mpy.c
     OUTPUT ${CMAKE_CURRENT_SOURCE_DIR}/ports/unix/build/genhdr/qstrdefs.collected.h
-
-    COMMAND make axtls
     COMMAND make lib
-    COMMAND touch ${CMAKE_CURRENT_SOURCE_DIR}/ports/unix/build/frozen.c
+#    COMMAND touch ${CMAKE_CURRENT_SOURCE_DIR}/ports/unix/build/frozen.c
     WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/ports/unix
     COMMENT "build micropython"
-    DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/extmod/eoslib/modeoslib.c ${CMAKE_CURRENT_SOURCE_DIR}/ports/unix/mpconfigport.h
+    DEPENDS  ${CMAKE_CURRENT_SOURCE_DIR}/ports/unix/build/libaxtls.a ${CMAKE_CURRENT_SOURCE_DIR}/extmod/eoslib/modeoslib.c ${CMAKE_CURRENT_SOURCE_DIR}/ports/unix/mpconfigport.h
 )
 
 set (SRC_FILES ${CMAKE_CURRENT_SOURCE_DIR}/ports/unix/build/frozen.c
