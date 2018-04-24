@@ -43,9 +43,20 @@
 static const char pad_spaces[] = "                ";
 static const char pad_zeroes[] = "0000000000000000";
 
+typedef void (*fn_printer)(const char * str, size_t len);
+static fn_printer s_printer = NULL;
+
+void set_printer(fn_printer _printer){
+   s_printer = _printer;
+}
+
 STATIC void plat_print_strn(void *env, const char *str, size_t len) {
     (void)env;
-    MP_PLAT_PRINT_STRN(str, len);
+    if (s_printer) {
+       s_printer(str, len);
+    } else {
+       MP_PLAT_PRINT_STRN(str, len);
+    }
 }
 
 const mp_print_t mp_plat_print = {NULL, plat_print_strn};

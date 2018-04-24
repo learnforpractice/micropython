@@ -3,6 +3,9 @@
 #if MICROPY_PY_EOSLIB
 static struct eosapi api;
 
+//mpprint.c
+void set_printer(fn_printer _printer);
+
 mp_obj_t micropy_load_from_py(const char *mod_name, const char *data, size_t len);
 mp_obj_t micropy_load_from_mpy(const char *mod_name, const char *data, size_t len);
 mp_obj_t micropy_call_0(mp_obj_t module_obj, const char *func);
@@ -61,7 +64,7 @@ void mp_obtain_mpapi(struct mpapi * _api) {
 
    _api->compile_and_save_to_buffer = compile_and_save_to_buffer;
    _api->set_debug_mode = py_set_debug_mode;
-
+   _api->set_printer = set_printer;
 }
 
 mp_uint_t mp_obj_get_uint(mp_const_obj_t self_in);
