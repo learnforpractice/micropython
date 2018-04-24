@@ -49,7 +49,7 @@
 #include "genhdr/mpversion.h"
 #include "input.h"
 
-mp_state_ctx_t mp_state_ctx;
+extern mp_state_ctx_t mp_state_ctx;
 
 // Command line options, with their defaults
 STATIC bool compile_only = false;
