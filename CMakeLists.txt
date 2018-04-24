@@ -202,24 +202,28 @@ endif()
 target_include_directories( micropython1 ${INCLUDE_DIRS} )
 
 #micropython2
-add_library( micropython2 SHARED ${SRC_FILES} )
+add_library( micropython2 SHARED ${SRC_FILES})
 if (APPLE)
-    target_link_libraries( micropython2 PUBLIC  intl dl util )
+    target_link_libraries( micropython2 PUBLIC  intl dl util)
 else()
     target_compile_options(micropython2 PRIVATE -DSHARED_MICROPYTHON)
     target_link_libraries( micropython2 PUBLIC dl util )
 endif()
 target_include_directories( micropython2 ${INCLUDE_DIRS} )
 
+add_dependencies(micropython2 micropython1)
+
 #micropython3
-add_library( micropython3 SHARED ${SRC_FILES} )
+add_library( micropython3 SHARED ${SRC_FILES})
 if (APPLE)
-    target_link_libraries( micropython3 PUBLIC  intl dl util )
+    target_link_libraries( micropython3 PUBLIC  intl dl util)
 else()
     target_compile_options(micropython3 PRIVATE -DSHARED_MICROPYTHON)
     target_link_libraries( micropython3 PUBLIC dl util )
 endif()
 target_include_directories( micropython3 ${INCLUDE_DIRS} )
+
+add_dependencies(micropython3 micropython2)
 
 
 INSTALL( TARGETS
