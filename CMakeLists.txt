@@ -64,7 +64,6 @@ set (SRC_FILES ${CMAKE_CURRENT_SOURCE_DIR}/ports/unix/build/frozen.c
     extmod/eoslib/modeoslib.c
     extmod/eoslib/frozenmod.cpp
     extmod/crypto-algorithms/xxhash.c
-    ports/unix/main_eos.c
     ports/unix/gccollect.c
     ports/unix/unix_mphal.c
     ports/unix/input.c
@@ -74,7 +73,6 @@ set (SRC_FILES ${CMAKE_CURRENT_SOURCE_DIR}/ports/unix/build/frozen.c
     ports/unix/modtime.c
     ports/unix/moduselect.c
     
-    py/mpstate.c
     py/nlrx64.c
     py/nlr.c
     py/malloc.c
@@ -192,39 +190,45 @@ set (INCLUDE_DIRS   PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/py
                     PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
 
 #micropython1
-add_library( micropython1 SHARED  ${SRC_FILES} )
+add_library( micropython STATIC  ${SRC_FILES} )
 if (APPLE)
-    target_link_libraries( micropython1 PUBLIC  intl dl util)
+    target_link_libraries( micropython PUBLIC  intl dl util)
+else()
+    target_compile_options(micropython PRIVATE -DSHARED_MICROPYTHON)
+    target_link_libraries( micropython PUBLIC dl util)
+endif()
+target_include_directories( micropython ${INCLUDE_DIRS} )
+
+#micropython1
+add_library( micropython1 SHARED ports/unix/main_eos.c  py/mpstate.c )
+if (APPLE)
+    target_link_libraries( micropython1 PUBLIC  intl dl util PRIVATE micropython)
 else()
     target_compile_options(micropython1 PRIVATE -DSHARED_MICROPYTHON)
-    target_link_libraries( micropython1 PUBLIC dl util)
+    target_link_libraries( micropython1 PUBLIC dl util PRIVATE micropython )
 endif()
 target_include_directories( micropython1 ${INCLUDE_DIRS} )
 
+
 #micropython2
-add_library( micropython2 SHARED ${SRC_FILES})
+add_library( micropython2 SHARED ports/unix/main_eos.c py/mpstate.c )
 if (APPLE)
-    target_link_libraries( micropython2 PUBLIC  intl dl util)
+    target_link_libraries( micropython2 PUBLIC  intl dl util PRIVATE micropython )
 else()
     target_compile_options(micropython2 PRIVATE -DSHARED_MICROPYTHON)
-    target_link_libraries( micropython2 PUBLIC dl util )
+    target_link_libraries( micropython2 PUBLIC dl util PRIVATE micropython )
 endif()
 target_include_directories( micropython2 ${INCLUDE_DIRS} )
 
-add_dependencies(micropython2 micropython1)
-
 #micropython3
-add_library( micropython3 SHARED ${SRC_FILES})
+add_library( micropython3 SHARED ports/unix/main_eos.c py/mpstate.c )
 if (APPLE)
-    target_link_libraries( micropython3 PUBLIC  intl dl util)
+    target_link_libraries( micropython3 PUBLIC  intl dl util PRIVATE micropython )
 else()
     target_compile_options(micropython3 PRIVATE -DSHARED_MICROPYTHON)
-    target_link_libraries( micropython3 PUBLIC dl util )
+    target_link_libraries( micropython3 PUBLIC dl util PRIVATE micropython )
 endif()
 target_include_directories( micropython3 ${INCLUDE_DIRS} )
-
-add_dependencies(micropython3 micropython2)
-
 
 INSTALL( TARGETS
    micropython1
