@@ -49,6 +49,8 @@ void mp_obtain_mpapi(struct mpapi * _api) {
       return;
    }
    _api->mp_obj_new_str = mp_obj_new_str;
+   _api->mp_obj_new_bytes = mp_obj_new_bytes;
+
    _api->micropy_load_from_py = micropy_load_from_py;
    _api->micropy_load_from_mpy = micropy_load_from_mpy;
    _api->micropy_call_0 = micropy_call_0;
