@@ -841,6 +841,19 @@ STATIC mp_obj_t mod_eoslib_cancel_deferred(size_t n_args, const mp_obj_t *args) 
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_VAR(mod_eoslib_cancel_deferred_obj, 1, mod_eoslib_cancel_deferred);
 
+STATIC mp_obj_t mod_eoslib_wasm_call(size_t n_args, const mp_obj_t *args) {
+   uint64_t code = mp_obj_get_uint(args[0]);
+   size_t len;
+   const char* func = mp_obj_str_get_data(args[1], &len);
+   uint64_t wasm_args[6];
+   for (int i=0;i<n_args-2;i++) {
+      wasm_args[i] = mp_obj_get_uint(args[2+i]);
+   }
+   int ret = api.wasm_call(code, func, len, wasm_args, n_args-2);
+   return mp_obj_new_int_from_ll(ret);
+}
+
+STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(mod_eoslib_wasm_call_obj, 2, 8, mod_eoslib_wasm_call);
 
 
 STATIC const mp_rom_map_elem_t mp_module_eoslib_globals_table[] = {
@@ -947,6 +960,8 @@ STATIC const mp_rom_map_elem_t mp_module_eoslib_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR_eosio_delay), MP_ROM_PTR(&mod_eoslib_eosio_delay_obj) },
 
 	 { MP_ROM_QSTR(MP_QSTR_S), MP_ROM_PTR(&mod_eoslib_S_obj) },
+
+	 { MP_ROM_QSTR(MP_QSTR_wasm_call), MP_ROM_PTR(&mod_eoslib_wasm_call_obj) },
 };
 
 STATIC MP_DEFINE_CONST_DICT(mp_module_eoslib_globals, mp_module_eoslib_globals_table);
