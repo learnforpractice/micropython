@@ -36,7 +36,7 @@
 #include "py/bc.h"
 #include <sys/time.h>
 
-static uint64_t MAX_EXECUTION_TIME = 200000LL;
+static uint64_t MAX_EXECUTION_TIME = 1000LL; //1ms
 static uint64_t execution_start_time = 0;
 
 uint64_t get_microseconds() {
