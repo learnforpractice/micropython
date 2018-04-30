@@ -199,43 +199,26 @@ else()
 endif()
 target_include_directories( micropython ${INCLUDE_DIRS} )
 
-#micropython1
-add_library( micropython1 SHARED ports/unix/main_eos.c  py/mpstate.c )
-if (APPLE)
-    target_link_libraries( micropython1 PUBLIC  intl dl util PRIVATE micropython)
-else()
-    target_compile_options(micropython1 PRIVATE -DSHARED_MICROPYTHON)
-    target_link_libraries( micropython1 PUBLIC dl util PRIVATE micropython )
-endif()
-target_include_directories( micropython1 ${INCLUDE_DIRS} )
+foreach(LIBINDEX RANGE 1 10 1)
+    add_library( micropython-${LIBINDEX} SHARED ports/unix/main_eos.c py/mpstate.c )
+    if (APPLE)
+        target_link_libraries( micropython-${LIBINDEX} PUBLIC  intl dl util PRIVATE micropython )
+    else()
+        target_compile_options(micropython-${LIBINDEX} PRIVATE -DSHARED_MICROPYTHON)
+        target_link_libraries( micropython-${LIBINDEX} PUBLIC dl util PRIVATE micropython )
+    endif()
+    target_include_directories( micropython-${LIBINDEX} ${INCLUDE_DIRS} )
+
+    INSTALL( TARGETS
+       micropython-${LIBINDEX}
+    
+       RUNTIME DESTINATION bin
+       LIBRARY DESTINATION lib
+       ARCHIVE DESTINATION lib
+    )
+
+endforeach(LIBINDEX)
 
 
-#micropython2
-add_library( micropython2 SHARED ports/unix/main_eos.c py/mpstate.c )
-if (APPLE)
-    target_link_libraries( micropython2 PUBLIC  intl dl util PRIVATE micropython )
-else()
-    target_compile_options(micropython2 PRIVATE -DSHARED_MICROPYTHON)
-    target_link_libraries( micropython2 PUBLIC dl util PRIVATE micropython )
-endif()
-target_include_directories( micropython2 ${INCLUDE_DIRS} )
-
-#micropython3
-add_library( micropython3 SHARED ports/unix/main_eos.c py/mpstate.c )
-if (APPLE)
-    target_link_libraries( micropython3 PUBLIC  intl dl util PRIVATE micropython )
-else()
-    target_compile_options(micropython3 PRIVATE -DSHARED_MICROPYTHON)
-    target_link_libraries( micropython3 PUBLIC dl util PRIVATE micropython )
-endif()
-target_include_directories( micropython3 ${INCLUDE_DIRS} )
-
-INSTALL( TARGETS
-   micropython1
-
-   RUNTIME DESTINATION bin
-   LIBRARY DESTINATION lib
-   ARCHIVE DESTINATION lib
-)
 
 
