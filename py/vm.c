@@ -36,13 +36,22 @@
 #include "py/bc.h"
 #include <sys/time.h>
 
+#include <time.h>
+#include <unistd.h> // for sysconf
+
 static uint64_t MAX_EXECUTION_TIME = 1000LL; //1ms
 static uint64_t execution_start_time = 0;
 
 uint64_t get_microseconds() {
-   struct timeval  tv;
-   gettimeofday(&tv, NULL);
-   return tv.tv_sec * 1000000LL + tv.tv_usec * 1LL ;
+   if (sysconf(_POSIX_THREAD_CPUTIME)){
+      struct timespec tv;
+      int err = clock_gettime(CLOCK_THREAD_CPUTIME_ID,&tv);
+      if (err == 0) {
+         return tv.tv_sec * 1000000LL + tv.tv_nsec / 1000LL;
+      }
+   }
+   printf("+++++ERROR: something went wrong!\n");
+   return 0;
 }
 
 void execution_start() {
