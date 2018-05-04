@@ -39,9 +39,9 @@
 #include <time.h>
 #include <unistd.h> // for sysconf
 
-static uint64_t MAX_EXECUTION_TIME = 1000LL; //1ms
+//static uint64_t MAX_EXECUTION_TIME = 2000LL; //2ms
 static uint64_t execution_start_time = 0;
-
+static uint64_t max_execution_time = 2000LL; //2ms
 uint64_t get_microseconds() {
    if (sysconf(_POSIX_THREAD_CPUTIME)){
       struct timespec tv;
@@ -54,6 +54,17 @@ uint64_t get_microseconds() {
    return 0;
 }
 
+void set_max_execution_time(int time) {
+   max_execution_time = time;
+}
+
+uint64_t get_execution_time() {
+   if (execution_start_time == 0) {
+      return 0;
+   }
+   return get_microseconds() - execution_start_time;
+}
+
 void execution_start() {
    execution_start_time = get_microseconds();
 }
@@ -64,7 +75,7 @@ void execution_end() {
 
 int is_execution_time_expire() {
    if (execution_start_time) {
-      return (execution_start_time + MAX_EXECUTION_TIME) < get_microseconds();
+      return (execution_start_time + max_execution_time) < get_microseconds();
    }
    return 0;
 }

@@ -17,6 +17,8 @@ int compile_and_save_to_buffer(const char* src_name, const char *src_buffer, siz
 //defined in vm.c
 void execution_start();
 void execution_end();
+void set_max_execution_time(int time);
+uint64_t get_execution_time();
 
 //main_eos.c
 int main_micropython(int argc, char **argv);
@@ -59,6 +61,8 @@ void mp_obtain_mpapi(struct mpapi * _api) {
 
    _api->execution_start = execution_start;
    _api->execution_end = execution_end;
+   _api->set_max_execution_time = set_max_execution_time;
+   _api->get_execution_time = get_execution_time;
 
    _api->main_micropython = main_micropython;
    _api->mp_call_function_0 = mp_call_function_0;
