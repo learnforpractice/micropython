@@ -31,6 +31,7 @@
 #include "py/smallint.h"
 #include "py/objint.h"
 #include "py/runtime.h"
+#include "math/safe_iop.h"
 
 #if MICROPY_PY_BUILTINS_FLOAT
 #include <math.h>
@@ -121,6 +122,7 @@ mp_obj_t mp_obj_int_unary_op(mp_unary_op_t op, mp_obj_t o_in) {
 mp_obj_t mp_obj_int_binary_op(mp_binary_op_t op, mp_obj_t lhs_in, mp_obj_t rhs_in) {
     long long lhs_val;
     long long rhs_val;
+    long long result;
 
     if (MP_OBJ_IS_SMALL_INT(lhs_in)) {
         lhs_val = MP_OBJ_SMALL_INT_VALUE(lhs_in);
@@ -141,13 +143,23 @@ mp_obj_t mp_obj_int_binary_op(mp_binary_op_t op, mp_obj_t lhs_in, mp_obj_t rhs_i
     switch (op) {
         case MP_BINARY_OP_ADD:
         case MP_BINARY_OP_INPLACE_ADD:
-            return mp_obj_new_int_from_ll(lhs_val + rhs_val);
+            if (safe_add(&result, lhs_val, rhs_val)) {
+               return mp_obj_new_int_from_ll(result);
+            }
+            mp_raise_msg(&mp_type_OverflowError, "value overflow!");
+
         case MP_BINARY_OP_SUBTRACT:
         case MP_BINARY_OP_INPLACE_SUBTRACT:
-            return mp_obj_new_int_from_ll(lhs_val - rhs_val);
+           if (safe_sub(&result, lhs_val, rhs_val)) {
+              return mp_obj_new_int_from_ll(result);
+           }
+           mp_raise_msg(&mp_type_OverflowError, "value overflow!");
         case MP_BINARY_OP_MULTIPLY:
         case MP_BINARY_OP_INPLACE_MULTIPLY:
-            return mp_obj_new_int_from_ll(lhs_val * rhs_val);
+           if (safe_mul(&result, lhs_val, rhs_val)) {
+              return mp_obj_new_int_from_ll(result);
+           }
+           mp_raise_msg(&mp_type_OverflowError, "value overflow!");
         case MP_BINARY_OP_FLOOR_DIVIDE:
         case MP_BINARY_OP_INPLACE_FLOOR_DIVIDE:
             if (rhs_val == 0) {
@@ -173,7 +185,11 @@ mp_obj_t mp_obj_int_binary_op(mp_binary_op_t op, mp_obj_t lhs_in, mp_obj_t rhs_i
 
         case MP_BINARY_OP_LSHIFT:
         case MP_BINARY_OP_INPLACE_LSHIFT:
-            return mp_obj_new_int_from_ll(lhs_val << (int)rhs_val);
+            result = lhs_val << (int)rhs_val;
+            if (result < lhs_val) {
+               mp_raise_msg(&mp_type_OverflowError, "value overflow!");
+            }
+            return mp_obj_new_int_from_ll(result);
         case MP_BINARY_OP_RSHIFT:
         case MP_BINARY_OP_INPLACE_RSHIFT:
             return mp_obj_new_int_from_ll(lhs_val >> (int)rhs_val);
