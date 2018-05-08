@@ -350,7 +350,7 @@ int main_micropython(int argc, char **argv) {
     mp_obj_t module_obj;
 
     assert(sizeof(long long) == 8);
-    assert(sizeof(int) == 8);
+    assert(sizeof(mp_int_t) == 8);
 
     memset(&mp_state_ctx, 0, sizeof(mp_state_ctx));
 
