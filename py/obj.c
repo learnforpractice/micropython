@@ -27,8 +27,8 @@
 #include <stdint.h>
 #include <stdio.h>
 #include <stdarg.h>
-#include <assert.h>
 
+#include "py/mp_assert.h"
 #include "py/obj.h"
 #include "py/objtype.h"
 #include "py/objint.h"

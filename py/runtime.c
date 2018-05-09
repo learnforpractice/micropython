@@ -26,8 +26,8 @@
 
 #include <stdio.h>
 #include <string.h>
-#include <assert.h>
 
+#include "py/mp_assert.h"
 #include "py/parsenum.h"
 #include "py/compile.h"
 #include "py/objstr.h"
@@ -910,6 +910,9 @@ too_short:
 
 mp_obj_t mp_load_attr(mp_obj_t base, qstr attr) {
     DEBUG_OP_printf("load attr %p.%s\n", base, qstr_str(attr));
+    if (qstr_from_str("__new__") == attr) {
+       mp_raise_msg(&mp_type_AttributeError, "call __new__ is not allowed.");
+    }
     // use load_method
     mp_obj_t dest[2];
     mp_load_method(base, attr, dest);
@@ -1022,6 +1025,10 @@ void mp_load_method_maybe(mp_obj_t obj, qstr attr, mp_obj_t *dest) {
     // clear output to indicate no attribute/method found yet
     dest[0] = MP_OBJ_NULL;
     dest[1] = MP_OBJ_NULL;
+
+    if (qstr_from_str("__new__") == attr) {
+       mp_raise_msg(&mp_type_AttributeError, "call __new__ is not allowed.");
+    }
 
     // get the type
     mp_obj_type_t *type = mp_obj_get_type(obj);

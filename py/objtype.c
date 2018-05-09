@@ -28,8 +28,8 @@
 #include <stdio.h>
 #include <stddef.h>
 #include <string.h>
-#include <assert.h>
 
+#include "py/mp_assert.h"
 #include "py/objtype.h"
 #include "py/runtime.h"
 

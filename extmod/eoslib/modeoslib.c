@@ -1,7 +1,12 @@
 #include "modeoslib.h"
+#include "py/mp_assert.h"
 
 #if MICROPY_PY_EOSLIB
 static struct eosapi api;
+
+void mp_assert_(int cond, char* str) {
+   api.eosio_assert(cond, str);
+}
 
 //mpprint.c
 void set_printer(fn_printer _printer);

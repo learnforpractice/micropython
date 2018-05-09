@@ -27,8 +27,8 @@
 
 #include <stdio.h>
 #include <string.h>
-#include <assert.h>
 
+#include "py/mp_assert.h"
 #include "py/compile.h"
 #include "py/objmodule.h"
 #include "py/persistentcode.h"
