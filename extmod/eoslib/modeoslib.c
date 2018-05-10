@@ -15,6 +15,7 @@ mp_obj_t micropy_load_from_py(const char *mod_name, const char *data, size_t len
 mp_obj_t micropy_load_from_mpy(const char *mod_name, const char *data, size_t len);
 mp_obj_t micropy_call_0(mp_obj_t module_obj, const char *func);
 mp_obj_t micropy_call_2(mp_obj_t module_obj, const char *func, uint64_t code, uint64_t type);
+mp_obj_t micropy_call_3(mp_obj_t module_obj, const char *func, uint64_t receiver, uint64_t code, uint64_t type);
 
 //in mp_compiler.c
 int compile_and_save_to_buffer(const char* src_name, const char *src_buffer, size_t src_size, char* buffer, size_t size);
@@ -62,6 +63,8 @@ void mp_obtain_mpapi(struct mpapi * _api) {
    _api->micropy_load_from_mpy = micropy_load_from_mpy;
    _api->micropy_call_0 = micropy_call_0;
    _api->micropy_call_2 = micropy_call_2;
+   _api->micropy_call_3 = micropy_call_3;
+
    _api->execute_from_str = execute_from_str;
 
    _api->execution_start = execution_start;

@@ -158,16 +158,14 @@ mp_obj_t micropy_call_0(mp_obj_t module_obj, const char *func) {
    }
 }
 
-mp_obj_t micropy_call_2(mp_obj_t module_obj, const char *func, uint64_t code, uint64_t type) {
+mp_obj_t micropy_call_1(mp_obj_t module_obj, const char* func, const char* _arg0) {
    nlr_buf_t nlr;
    if (nlr_push(&nlr) == 0) {
       mp_obj_t py_func = mp_load_attr(module_obj, qstr_from_str(func));
-
-      mp_obj_t arg0 = mp_obj_new_int_from_ll((long long)code);
-      mp_obj_t arg1 = mp_obj_new_int_from_ll((long long)type);
-      mp_obj_t module_obj = mp_call_function_2(py_func, arg0, arg1);
+      mp_obj_t arg0 = mp_obj_new_str(_arg0, strnlen(_arg0,256));
+      mp_obj_t ret = mp_call_function_1(py_func, arg0);
       nlr_pop();
-      return module_obj;
+      return ret;
    } else {
       mp_obj_print_exception(&mp_plat_print, MP_OBJ_FROM_PTR(nlr.ret_val));
        // uncaught exception
@@ -175,14 +173,35 @@ mp_obj_t micropy_call_2(mp_obj_t module_obj, const char *func, uint64_t code, ui
    }
 }
 
-mp_obj_t micropy_call_1(mp_obj_t module_obj, const char* func, const char* _arg0) {
+mp_obj_t micropy_call_2(mp_obj_t module_obj, const char *func, uint64_t code, uint64_t type) {
    nlr_buf_t nlr;
    if (nlr_push(&nlr) == 0) {
       mp_obj_t py_func = mp_load_attr(module_obj, qstr_from_str(func));
-      mp_obj_t arg0 = mp_obj_new_str(_arg0, strnlen(_arg0,256));
-      mp_obj_t module_obj = mp_call_function_1(py_func, arg0);
+
+      mp_obj_t arg0 = mp_obj_new_int_from_ll((long long)code);
+      mp_obj_t arg1 = mp_obj_new_int_from_ll((long long)type);
+      mp_obj_t ret = mp_call_function_2(py_func, arg0, arg1);
       nlr_pop();
-      return module_obj;
+      return ret;
+   } else {
+      mp_obj_print_exception(&mp_plat_print, MP_OBJ_FROM_PTR(nlr.ret_val));
+       // uncaught exception
+       return 0;
+   }
+}
+
+mp_obj_t micropy_call_3(mp_obj_t module_obj, const char *func, uint64_t receiver, uint64_t code, uint64_t type) {
+   nlr_buf_t nlr;
+   if (nlr_push(&nlr) == 0) {
+      mp_obj_t py_func = mp_load_attr(module_obj, qstr_from_str(func));
+
+      mp_obj_t args[3];
+      args[0] = mp_obj_new_int_from_ll((long long)receiver);
+      args[1] = mp_obj_new_int_from_ll((long long)code);
+      args[2] = mp_obj_new_int_from_ll((long long)type);
+      mp_obj_t ret = mp_call_function_n_kw(py_func, 3, 0, args);
+      nlr_pop();
+      return ret;
    } else {
       mp_obj_print_exception(&mp_plat_print, MP_OBJ_FROM_PTR(nlr.ret_val));
        // uncaught exception
