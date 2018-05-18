@@ -745,18 +745,16 @@ STATIC mp_obj_t mod_eoslib_send_deferred(size_t n_args, const mp_obj_t *args) {
    payer = mp_obj_get_uint(args[1]);
 
    trx.expiration             = mp_obj_get_uint(args[2]);
-   trx.region                 = mp_obj_get_uint(args[3]);
-   trx.ref_block_num          = mp_obj_get_uint(args[4]);
-   trx.ref_block_prefix       = mp_obj_get_uint(args[5]);
-   trx.max_net_usage_words    = mp_obj_get_uint(args[6]);
-   trx.max_kcpu_usage         = mp_obj_get_uint(args[7]);
-   trx.delay_sec              = mp_obj_get_uint(args[8]);
+   trx.ref_block_num          = mp_obj_get_uint(args[3]);
+   trx.ref_block_prefix       = mp_obj_get_uint(args[4]);
+   trx.max_net_usage_words    = mp_obj_get_uint(args[5]);
+   trx.delay_sec              = mp_obj_get_uint(args[6]);
 
    mp_obj_t* context_free_actions_obj;
    mp_obj_t* actions_obj;
 
-   if (args[9] != mp_const_none) {
-      mp_obj_get_array(args[9], &trx.free_actions_len, &context_free_actions_obj);
+   if (args[7] != mp_const_none) {
+      mp_obj_get_array(args[7], &trx.free_actions_len, &context_free_actions_obj);
       if (trx.free_actions_len > 0) {
          trx.context_free_actions = (struct mp_action**)calloc(trx.free_actions_len, sizeof(struct mp_action**));
 
@@ -784,8 +782,8 @@ STATIC mp_obj_t mod_eoslib_send_deferred(size_t n_args, const mp_obj_t *args) {
       }
    }
 
-   if (args[10] != mp_const_none) {
-      mp_obj_get_array(args[10], &trx.actions_len, &actions_obj);
+   if (args[8] != mp_const_none) {
+      mp_obj_get_array(args[8], &trx.actions_len, &actions_obj);
       if (trx.actions_len > 0) {
          trx.actions = (struct mp_action**)calloc(trx.actions_len, sizeof(struct mp_action**));
 
@@ -836,7 +834,7 @@ STATIC mp_obj_t mod_eoslib_send_deferred(size_t n_args, const mp_obj_t *args) {
 
    return mp_const_none;
 }
-STATIC MP_DEFINE_CONST_FUN_OBJ_VAR(mod_eoslib_send_deferred_obj, 11, mod_eoslib_send_deferred);
+STATIC MP_DEFINE_CONST_FUN_OBJ_VAR(mod_eoslib_send_deferred_obj, 9, mod_eoslib_send_deferred);
 
 
 STATIC mp_obj_t mod_eoslib_cancel_deferred(size_t n_args, const mp_obj_t *args) {
