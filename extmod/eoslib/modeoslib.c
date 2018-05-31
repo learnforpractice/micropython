@@ -45,7 +45,7 @@ void mp_register_eosapi(struct eosapi * _api) {
 	api = *_api;
 }
 
-struct eosapi* mp_get_eosapi(struct eosapi * _api) {
+struct eosapi* mp_get_eosapi() {
    return &api;
 }
 
