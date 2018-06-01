@@ -12,10 +12,11 @@ void mp_assert_(int cond, char* str) {
 void set_printer(fn_printer _printer);
 
 mp_obj_t micropy_load_from_py(const char *mod_name, const char *data, size_t len);
-mp_obj_t micropy_load_from_mpy(const char *mod_name, const char *data, size_t len);
+mp_obj_t micropy_load_from_mpy(const char *mod_name, const char *data, size_t len, mp_raw_code_t** raw_code);
+
 mp_obj_t micropy_call_0(mp_obj_t module_obj, const char *func);
 mp_obj_t micropy_call_2(mp_obj_t module_obj, const char *func, uint64_t code, uint64_t type);
-mp_obj_t micropy_call_3(mp_obj_t module_obj, const char *func, uint64_t receiver, uint64_t code, uint64_t type);
+mp_obj_t micropy_call_3(mp_obj_t module_obj, mp_raw_code_t * raw_code, const char *func, uint64_t receiver, uint64_t code, uint64_t type);
 
 //in mp_compiler.c
 int compile_and_save_to_buffer(const char* src_name, const char *src_buffer, size_t src_size, char* buffer, size_t size);
@@ -25,7 +26,6 @@ void execution_start();
 void execution_end();
 void set_max_execution_time(int time);
 uint64_t get_execution_time();
-void enable_set_global(int enable);
 
 //main_eos.c
 int main_micropython(int argc, char **argv);
@@ -80,7 +80,6 @@ void mp_obtain_mpapi(struct mpapi * _api) {
    _api->compile_and_save_to_buffer = compile_and_save_to_buffer;
    _api->set_debug_mode = py_set_debug_mode;
    _api->set_printer = set_printer;
-   _api->enable_set_global = enable_set_global;
 }
 
 mp_uint_t mp_obj_get_uint(mp_const_obj_t self_in);

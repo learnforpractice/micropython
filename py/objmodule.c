@@ -25,8 +25,8 @@
  */
 
 #include <stdlib.h>
-#include "py/mp_assert.h"
 
+#include "py/mp_assert.h"
 #include "py/objmodule.h"
 #include "py/runtime.h"
 #include "py/builtin.h"
@@ -104,7 +104,14 @@ mp_obj_t mp_obj_new_module(qstr module_name) {
     // We could error out if module already exists, but let C extensions
     // add new members to existing modules.
     if (el->value != MP_OBJ_NULL) {
-        return el->value;
+       //reset globals
+       mp_obj_module_t *self = MP_OBJ_TO_PTR(el->value);
+       mp_obj_dict_t *old_globals = self->globals;
+       self->globals = MP_OBJ_TO_PTR(mp_obj_new_dict(MICROPY_MODULE_DICT_SIZE));
+       // store __name__ entry in the module
+       mp_obj_dict_store(MP_OBJ_FROM_PTR(self->globals), MP_OBJ_NEW_QSTR(MP_QSTR___name__), MP_OBJ_NEW_QSTR(module_name));
+       m_del_obj(mp_obj_dict_t, old_globals);
+       return el->value;
     }
 
     // create new module object
