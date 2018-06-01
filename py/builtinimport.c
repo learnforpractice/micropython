@@ -614,6 +614,7 @@ mp_obj_t micropy_load_from_mpy(const char *mod_name, const char *data, size_t le
 }
 
 mp_obj_t micropy_call_3(mp_obj_t module_obj, mp_raw_code_t * raw_code, const char *func, uint64_t receiver, uint64_t code, uint64_t type) {
+   mp_obj_t ret;
    nlr_buf_t nlr;
    if (nlr_push(&nlr) == 0) {
       do_execute_raw_code(module_obj, raw_code);
@@ -624,23 +625,21 @@ mp_obj_t micropy_call_3(mp_obj_t module_obj, mp_raw_code_t * raw_code, const cha
       args[0] = mp_obj_new_int_from_ll((long long)receiver);
       args[1] = mp_obj_new_int_from_ll((long long)code);
       args[2] = mp_obj_new_int_from_ll((long long)type);
-      mp_obj_t ret = mp_call_function_n_kw(py_func, 3, 0, args);
-
-      //reset globals
-      mp_obj_module_t *self = MP_OBJ_TO_PTR(module_obj);
-      mp_obj_dict_t *old_globals = self->globals;
-      self->globals = MP_OBJ_TO_PTR(mp_obj_new_dict(MICROPY_MODULE_DICT_SIZE));
-      // store __name__ entry in the module
-      mp_map_elem_t *key_elem = mp_map_lookup(&old_globals->map, MP_OBJ_NEW_QSTR(MP_QSTR___name__), MP_MAP_LOOKUP);
-      assert(key_elem);
-      mp_obj_dict_store(MP_OBJ_FROM_PTR(self->globals), MP_OBJ_NEW_QSTR(MP_QSTR___name__), key_elem->value);
-      m_del_obj(mp_obj_dict_t, old_globals);
-
+      ret = mp_call_function_n_kw(py_func, 3, 0, args);
       nlr_pop();
-      return ret;
    } else {
       mp_obj_print_exception(&mp_plat_print, MP_OBJ_FROM_PTR(nlr.ret_val));
        // uncaught exception
-       return 0;
+      ret = 0;
    }
+   //reset globals
+   mp_obj_module_t *self = MP_OBJ_TO_PTR(module_obj);
+   mp_obj_dict_t *old_globals = self->globals;
+   self->globals = MP_OBJ_TO_PTR(mp_obj_new_dict(MICROPY_MODULE_DICT_SIZE));
+   // store __name__ entry in the module
+   mp_map_elem_t *key_elem = mp_map_lookup(&old_globals->map, MP_OBJ_NEW_QSTR(MP_QSTR___name__), MP_MAP_LOOKUP);
+   assert(key_elem);
+   mp_obj_dict_store(MP_OBJ_FROM_PTR(self->globals), MP_OBJ_NEW_QSTR(MP_QSTR___name__), key_elem->value);
+   m_del_obj(mp_obj_dict_t, old_globals);
+   return ret;
 }
