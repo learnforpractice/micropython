@@ -40,10 +40,6 @@ extern "C" struct eosapi* mp_get_eosapi();
 
 extern "C" {
 
-
-static char code_data[1024*64];
-
-
 int mp_find_frozen_module(const char *mod_name, size_t len, void **data) {
 //   ilog("+++++++++mod_name: ${n}", ("n", mod_name));
    if (py_is_debug_mode()) {
@@ -80,8 +76,9 @@ int mp_find_frozen_module(const char *mod_name, size_t len, void **data) {
          return MP_FROZEN_NONE;
    }
 
-   int size = mp_get_eosapi()->db_get_i64(itr, code_data, sizeof(code_data));
-   mp_get_eosapi()->eosio_assert(size < sizeof(code_data), "source file too large!");
+   size_t size = 0;
+   const char *code_data = mp_get_eosapi()->db_get_i64_exex(itr, &size);
+
 //   ilog("+++++++++code_data: ${n1} ${n2}", ("n1", code_data[0])("n2", size));
    if (size > 0) {
       int code_type = code_data[0];
@@ -101,11 +98,11 @@ int mp_find_frozen_module(const char *mod_name, size_t len, void **data) {
       }
    }
    return ret;
-
 }
 
 const char *mp_find_frozen_str(const char *str, size_t *len) {
    mp_get_eosapi()->eosio_assert(false, "not implemented!");
+   return 0;
 }
 
 mp_import_stat_t mp_frozen_stat(const char *mod_name) {
