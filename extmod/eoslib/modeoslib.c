@@ -25,6 +25,7 @@ void execution_start();
 void execution_end();
 void set_max_execution_time(int time);
 uint64_t get_execution_time();
+void enable_set_global(int enable);
 
 //main_eos.c
 int main_micropython(int argc, char **argv);
@@ -79,6 +80,7 @@ void mp_obtain_mpapi(struct mpapi * _api) {
    _api->compile_and_save_to_buffer = compile_and_save_to_buffer;
    _api->set_debug_mode = py_set_debug_mode;
    _api->set_printer = set_printer;
+   _api->enable_set_global = enable_set_global;
 }
 
 mp_uint_t mp_obj_get_uint(mp_const_obj_t self_in);

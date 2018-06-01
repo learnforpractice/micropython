@@ -80,6 +80,11 @@ int is_execution_time_expire() {
    return 0;
 }
 
+static int _enable_set_global = 0;
+void enable_set_global(int enable) {
+   _enable_set_global = enable;
+}
+
 #if 0
 #define TRACE(ip) printf("sp=%d ", (int)(sp - &code_state->state[0] + 1)); mp_bytecode_print2(ip, 1, code_state->fun_bc->const_table);
 #else
@@ -481,6 +486,10 @@ dispatch_loop:
                 }
 
                 ENTRY(MP_BC_STORE_GLOBAL): {
+                   if (!_enable_set_global) {
+                      mp_obj_t obj = mp_obj_new_exception_msg(&mp_type_RuntimeError, "global variable not allowed!");
+                      RAISE(obj);
+                   }
                     MARK_EXC_IP_SELECTIVE();
                     DECODE_QSTR;
                     mp_store_global(qst, POP());
