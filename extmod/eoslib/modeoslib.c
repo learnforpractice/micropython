@@ -53,10 +53,18 @@ struct eosapi* mp_get_eosapi() {
 //main_eos.c
 void* execute_from_str(const char *str);
 
+static struct mpapi* caller_api = NULL;
+int is_mp_init_finished() {
+   if (!caller_api) {
+      return 0;
+   }
+   return caller_api->init;
+}
 void mp_obtain_mpapi(struct mpapi * _api) {
    if (!_api) {
       return;
    }
+   caller_api = _api;
    _api->mp_obj_new_str = mp_obj_new_str;
    _api->mp_obj_new_bytes = mp_obj_new_bytes;
 

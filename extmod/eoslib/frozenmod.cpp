@@ -41,7 +41,7 @@ extern "C" struct eosapi* mp_get_eosapi();
 extern "C" {
 
 int mp_find_frozen_module(const char *mod_name, size_t len, void **data) {
-//   ilog("+++++++++mod_name: ${n}", ("n", mod_name));
+//   printf("+++++++++mod_name: %s\n", mod_name);
    if (py_is_debug_mode()) {
       return MP_FROZEN_NONE;
    }
@@ -73,8 +73,11 @@ int mp_find_frozen_module(const char *mod_name, size_t len, void **data) {
 
    int itr = mp_get_eosapi()->db_find_i64(code, code, code, id);
    if (itr < 0) {
+//      printf("+++++++mp_find_frozen_module not found!\n");
          return MP_FROZEN_NONE;
    }
+
+//   printf("+++++++mp_find_frozen_module, found!\n");
 
    size_t size = 0;
    const char *code_data = mp_get_eosapi()->db_get_i64_exex(itr, &size);

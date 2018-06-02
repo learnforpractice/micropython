@@ -54,6 +54,8 @@ STATIC void module_print(const mp_print_t *print, mp_obj_t self_in, mp_print_kin
     mp_printf(print, "<module '%s'>", module_name);
 }
 
+int change_attr_allowed(mp_obj_t module_obj);
+
 STATIC void module_attr(mp_obj_t self_in, qstr attr, mp_obj_t *dest) {
     mp_obj_module_t *self = MP_OBJ_TO_PTR(self_in);
     if (dest[0] == MP_OBJ_NULL) {
@@ -81,11 +83,19 @@ STATIC void module_attr(mp_obj_t self_in, qstr attr, mp_obj_t *dest) {
         }
         if (dest[1] == MP_OBJ_NULL) {
             // delete attribute
-            mp_obj_dict_delete(MP_OBJ_FROM_PTR(dict), MP_OBJ_NEW_QSTR(attr));
+           if (change_attr_allowed(self_in)) {
+              mp_obj_dict_delete(MP_OBJ_FROM_PTR(dict), MP_OBJ_NEW_QSTR(attr));
+           } else {
+              mp_raise_msg(&mp_type_AttributeError, "delete attr is not allowed in other module ");
+           }
         } else {
             // store attribute
             // TODO CPython allows STORE_ATTR to a module, but is this the correct implementation?
-            mp_obj_dict_store(MP_OBJ_FROM_PTR(dict), MP_OBJ_NEW_QSTR(attr), dest[1]);
+           if (change_attr_allowed(self_in)) {
+              mp_obj_dict_store(MP_OBJ_FROM_PTR(dict), MP_OBJ_NEW_QSTR(attr), dest[1]);
+           } else {
+              mp_raise_msg(&mp_type_AttributeError, "change attr is not allowed in other module ");
+           }
         }
         dest[0] = MP_OBJ_NULL; // indicate success
     }

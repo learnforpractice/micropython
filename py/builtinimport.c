@@ -229,11 +229,39 @@ STATIC void do_execute_raw_code(mp_obj_t module_obj, mp_raw_code_t *raw_code) {
 }
 #endif
 
+static mp_obj_t _current_module = NULL;
+void set_current_module(mp_obj_t module) {
+   _current_module = module;
+}
+
+mp_obj_t get_current_module() {
+   return _current_module;
+}
+
+int is_current_module(mp_obj_t module_obj) {
+   return module_obj == _current_module;
+}
+
+static int _do_load = 0;
+//modeoslib.c
+int is_mp_init_finished();
+
+int change_attr_allowed(mp_obj_t module_obj) {
+   if (_do_load) {
+      return 1;
+   }
+   if (!is_mp_init_finished()) {
+      return 1;
+   }
+   return is_current_module(module_obj);
+}
+
 STATIC void do_load(mp_obj_t module_obj, vstr_t *file) {
     #if MICROPY_MODULE_FROZEN || MICROPY_PERSISTENT_CODE_LOAD || MICROPY_ENABLE_COMPILER
     char *file_str = vstr_null_terminated_str(file);
     #endif
     printf("+++++++++do_load: %s\n",file_str);
+    _do_load = 1;
     // If we support frozen modules (either as str or mpy) then try to find the
     // requested filename in the list of frozen module filenames.
     #if MICROPY_MODULE_FROZEN
@@ -246,7 +274,7 @@ STATIC void do_load(mp_obj_t module_obj, vstr_t *file) {
     #if MICROPY_MODULE_FROZEN_STR
     if (frozen_type == MP_FROZEN_STR) {
         do_load_from_lexer(module_obj, modref);
-        return;
+        goto _return;
     }
     #endif
 
@@ -255,7 +283,7 @@ STATIC void do_load(mp_obj_t module_obj, vstr_t *file) {
     #if MICROPY_MODULE_FROZEN_MPY
     if (frozen_type == MP_FROZEN_MPY) {
         do_execute_raw_code(module_obj, modref);
-        return;
+        goto _return;
     }
     #endif
 
@@ -265,7 +293,7 @@ STATIC void do_load(mp_obj_t module_obj, vstr_t *file) {
     if (file_str[file->len - 3] == 'm') {
         mp_raw_code_t *raw_code = mp_raw_code_load_file(file_str);
         do_execute_raw_code(module_obj, raw_code);
-        return;
+        goto _return;
     }
     #endif
 
@@ -274,13 +302,16 @@ STATIC void do_load(mp_obj_t module_obj, vstr_t *file) {
     {
         mp_lexer_t *lex = mp_lexer_new_from_file(file_str);
         do_load_from_lexer(module_obj, lex);
-        return;
+        goto _return;
     }
     #else
 
     // If we get here then the file was not frozen and we can't compile scripts.
     mp_raise_msg(&mp_type_ImportError, "script compilation not supported");
     #endif
+_return:
+   _do_load = 0;
+   return;
 }
 
 mp_obj_t micropy_load_raw_code(const char *mod_name, const char *file_str) {
@@ -616,6 +647,7 @@ mp_obj_t micropy_load_from_mpy(const char *mod_name, const char *data, size_t le
 mp_obj_t micropy_call_3(mp_obj_t module_obj, mp_raw_code_t * raw_code, const char *func, uint64_t receiver, uint64_t code, uint64_t type) {
    mp_obj_t ret;
    nlr_buf_t nlr;
+   set_current_module(module_obj);
    if (nlr_push(&nlr) == 0) {
       do_execute_raw_code(module_obj, raw_code);
 
