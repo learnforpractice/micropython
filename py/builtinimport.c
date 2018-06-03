@@ -633,7 +633,7 @@ mp_obj_t micropy_load_from_mpy(const char *mod_name, const char *data, size_t le
       qstr qstr_mod_name = qstr_from_str(mod_name);
       mp_obj_t module_obj = mp_obj_new_module(qstr_mod_name);
       *raw_code = mp_raw_code_load_mem((const byte*)data, len);
-   //      do_execute_raw_code(module_obj, raw_code);
+       do_execute_raw_code(module_obj, *raw_code);
       return module_obj;
    }
    else
@@ -649,7 +649,7 @@ mp_obj_t micropy_call_3(mp_obj_t module_obj, mp_raw_code_t * raw_code, const cha
    nlr_buf_t nlr;
    set_current_module(module_obj);
    if (nlr_push(&nlr) == 0) {
-      do_execute_raw_code(module_obj, raw_code);
+//      do_execute_raw_code(module_obj, raw_code);
 
       mp_obj_t py_func = mp_load_attr(module_obj, qstr_from_str(func));
 
@@ -664,6 +664,7 @@ mp_obj_t micropy_call_3(mp_obj_t module_obj, mp_raw_code_t * raw_code, const cha
        // uncaught exception
       ret = 0;
    }
+   return ret;
    //reset globals
    mp_obj_module_t *self = MP_OBJ_TO_PTR(module_obj);
    mp_obj_dict_t *old_globals = self->globals;
