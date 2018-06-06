@@ -101,6 +101,7 @@ $(BUILD)/extmod/modbtree.o: CFLAGS += $(BTREE_DEFS)
 endif
 
 INC +=  -I$(TOP)/extmod/crypto-algorithms
+INC +=  -I$(TOP)/../../contracts
 
 # py object files
 PY_CORE_O_BASENAME = $(addprefix py/,\

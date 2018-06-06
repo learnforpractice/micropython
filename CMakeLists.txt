@@ -179,10 +179,12 @@ set (SRC_FILES ${CMAKE_CURRENT_SOURCE_DIR}/ports/unix/build/frozen.c
     lib/utils/printf.c
     ports/unix/build/frozen.c
     ports/unix/build/genhdr/qstrdefs.collected.h
-             ${HEADERS}
+    ${HEADERS}
+    vm_api.cpp
 )
 
-set (INCLUDE_DIRS   PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/py
+set (INCLUDE_DIRS   PRIVATE ${CMAKE_SOURCE_DIR}/contracts
+                    PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/py
                     PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/extmod
                     PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/extmod/crypto-algorithms
                     PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/ports/unix
