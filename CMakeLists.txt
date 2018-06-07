@@ -25,7 +25,6 @@ add_custom_command(
 
 set (SRC_FILES ${CMAKE_CURRENT_SOURCE_DIR}/ports/unix/build/frozen.c
     ${CMAKE_CURRENT_SOURCE_DIR}/ports/unix/build/frozen_mpy.c
-
 #ports/unix/build/py/emitnx64.o
 #ports/unix/mpthreadport.c
 #ports/unix/alloc.c
@@ -180,7 +179,6 @@ set (SRC_FILES ${CMAKE_CURRENT_SOURCE_DIR}/ports/unix/build/frozen.c
     ports/unix/build/frozen.c
     ports/unix/build/genhdr/qstrdefs.collected.h
     ${HEADERS}
-    vm_py.cpp
 )
 
 set (INCLUDE_DIRS   PRIVATE ${CMAKE_SOURCE_DIR}/contracts
@@ -202,7 +200,7 @@ endif()
 target_include_directories( vm_py ${INCLUDE_DIRS} )
 
 foreach(LIBINDEX RANGE 1 10 1)
-    add_library( vm_py-${LIBINDEX} SHARED ports/unix/main_eos.c py/mpstate.c )
+    add_library( vm_py-${LIBINDEX} SHARED ports/unix/main_eos.c py/mpstate.c vm_py.cpp)
     if (APPLE)
         target_link_libraries( vm_py-${LIBINDEX} PUBLIC  intl dl util PRIVATE vm_py )
     else()

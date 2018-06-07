@@ -10,11 +10,13 @@ struct vm_api* get_vm_api() {
    return &s_api;
 }
 
-void setcode(uint64_t account) {
-   printf("+++++micropython: setcode");
+int setcode(uint64_t account) {
+   printf("+++++micropython: setcode\n");
+   return 0;
 }
 
-void apply(uint64_t receiver, uint64_t account, uint64_t act) {
-   printf("+++++micropython: apply");
+int apply(uint64_t receiver, uint64_t account, uint64_t act) {
+   printf("+++++micropython: apply\n");
+   return 0;
 }
 
