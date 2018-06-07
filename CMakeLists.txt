@@ -180,7 +180,7 @@ set (SRC_FILES ${CMAKE_CURRENT_SOURCE_DIR}/ports/unix/build/frozen.c
     ports/unix/build/frozen.c
     ports/unix/build/genhdr/qstrdefs.collected.h
     ${HEADERS}
-    vm_api.cpp
+    vm_py.cpp
 )
 
 set (INCLUDE_DIRS   PRIVATE ${CMAKE_SOURCE_DIR}/contracts
