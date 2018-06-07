@@ -19,7 +19,7 @@ add_custom_command(
     COMMAND make lib
 #    COMMAND touch ${CMAKE_CURRENT_SOURCE_DIR}/ports/unix/build/frozen.c
     WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/ports/unix
-    COMMENT "build micropython"
+    COMMENT "build vm_py"
     DEPENDS  ${CMAKE_CURRENT_SOURCE_DIR}/ports/unix/build/libaxtls.a ${CMAKE_CURRENT_SOURCE_DIR}/extmod/eoslib/modeoslib.c ${CMAKE_CURRENT_SOURCE_DIR}/ports/unix/mpconfigport.h
 )
 
@@ -191,28 +191,28 @@ set (INCLUDE_DIRS   PRIVATE ${CMAKE_SOURCE_DIR}/contracts
                     PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/ports/unix/build
                     PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
 
-#micropython1
-add_library( micropython STATIC  ${SRC_FILES} )
+#vm_py1
+add_library( vm_py STATIC  ${SRC_FILES} )
 if (APPLE)
-    target_link_libraries( micropython PUBLIC  intl dl util)
+    target_link_libraries( vm_py PUBLIC  intl dl util)
 else()
-    target_compile_options(micropython PRIVATE -DSHARED_MICROPYTHON  -fPIC)
-    target_link_libraries( micropython PUBLIC dl util)
+    target_compile_options(vm_py PRIVATE -DSHARED_MICROPYTHON  -fPIC)
+    target_link_libraries( vm_py PUBLIC dl util)
 endif()
-target_include_directories( micropython ${INCLUDE_DIRS} )
+target_include_directories( vm_py ${INCLUDE_DIRS} )
 
 foreach(LIBINDEX RANGE 1 10 1)
-    add_library( micropython-${LIBINDEX} SHARED ports/unix/main_eos.c py/mpstate.c )
+    add_library( vm_py-${LIBINDEX} SHARED ports/unix/main_eos.c py/mpstate.c )
     if (APPLE)
-        target_link_libraries( micropython-${LIBINDEX} PUBLIC  intl dl util PRIVATE micropython )
+        target_link_libraries( vm_py-${LIBINDEX} PUBLIC  intl dl util PRIVATE vm_py )
     else()
-        target_compile_options(micropython-${LIBINDEX} PRIVATE -DSHARED_MICROPYTHON)
-        target_link_libraries( micropython-${LIBINDEX} PUBLIC dl util PRIVATE micropython )
+        target_compile_options(vm_py-${LIBINDEX} PRIVATE -DSHARED_MICROPYTHON)
+        target_link_libraries( vm_py-${LIBINDEX} PUBLIC dl util PRIVATE vm_py )
     endif()
-    target_include_directories( micropython-${LIBINDEX} ${INCLUDE_DIRS} )
+    target_include_directories( vm_py-${LIBINDEX} ${INCLUDE_DIRS} )
 
     INSTALL( TARGETS
-       micropython-${LIBINDEX}
+       vm_py-${LIBINDEX}
     
        RUNTIME DESTINATION bin
        LIBRARY DESTINATION lib
