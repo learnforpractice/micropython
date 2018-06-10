@@ -247,6 +247,7 @@ static int _do_load = 0;
 int is_mp_init_finished();
 
 int change_attr_allowed(mp_obj_t module_obj) {
+#if 0
    if (_do_load) {
       return 1;
    }
@@ -254,6 +255,11 @@ int change_attr_allowed(mp_obj_t module_obj) {
       return 1;
    }
    return is_current_module(module_obj);
+#endif
+   if (!is_mp_init_finished()) {
+      return 1;
+   }
+   return 0;
 }
 
 STATIC void do_load(mp_obj_t module_obj, vstr_t *file) {

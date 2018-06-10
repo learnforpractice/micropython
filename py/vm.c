@@ -474,9 +474,11 @@ dispatch_loop:
                 }
 
                 ENTRY(MP_BC_STORE_NAME): {
-                    MARK_EXC_IP_SELECTIVE();
+//                   mp_obj_t obj = mp_obj_new_exception_msg(&mp_type_RuntimeError, "global variable is not allowed!");
+//                   RAISE(obj);
+                   MARK_EXC_IP_SELECTIVE();
                     DECODE_QSTR;
-                    mp_store_name(qst, POP());
+                    mp_store_name_ex(qst, POP());
                     DISPATCH();
                 }
 

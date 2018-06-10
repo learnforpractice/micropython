@@ -92,9 +92,13 @@ mp_obj_t mp_load_name(qstr qst);
 mp_obj_t mp_load_global(qstr qst);
 mp_obj_t mp_load_build_class(void);
 void mp_store_name(qstr qst, mp_obj_t obj);
+void mp_store_name_ex(qstr qst, mp_obj_t obj);
 void mp_store_global(qstr qst, mp_obj_t obj);
 void mp_delete_name(qstr qst);
 void mp_delete_global(qstr qst);
+
+int change_attr_allowed(mp_obj_t module_obj);
+int is_mp_init_finished();
 
 mp_obj_t mp_unary_op(mp_unary_op_t op, mp_obj_t arg);
 mp_obj_t mp_binary_op(mp_binary_op_t op, mp_obj_t lhs, mp_obj_t rhs);
