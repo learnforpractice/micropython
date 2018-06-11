@@ -202,7 +202,7 @@ void mp_store_name_ex(qstr qst, mp_obj_t obj) {
     DEBUG_OP_printf("store name %s <- %p\n", qstr_str(qst), obj);
     if (is_mp_init_finished()) {
        if (!MP_OBJ_IS_FUN(obj)) {
-          mp_raise_msg(&mp_type_NameError, "global attribute not allowed!");
+          mp_raise_msg(&mp_type_NameError, "store name not allowed!");
        }
     }
     mp_obj_dict_store(MP_OBJ_FROM_PTR(mp_locals_get()), MP_OBJ_NEW_QSTR(qst), obj);
@@ -211,17 +211,26 @@ void mp_store_name_ex(qstr qst, mp_obj_t obj) {
 void mp_delete_name(qstr qst) {
     DEBUG_OP_printf("delete name %s\n", qstr_str(qst));
     // TODO convert KeyError to NameError if qst not found
+    if (is_mp_init_finished()) {
+        mp_raise_msg(&mp_type_NameError, "delete name not allowed!");
+    }
     mp_obj_dict_delete(MP_OBJ_FROM_PTR(mp_locals_get()), MP_OBJ_NEW_QSTR(qst));
 }
 
 void mp_store_global(qstr qst, mp_obj_t obj) {
     DEBUG_OP_printf("store global %s <- %p\n", qstr_str(qst), obj);
+    if (is_mp_init_finished()) {
+        mp_raise_msg(&mp_type_NameError, "store global not allowed!!");
+    }
     mp_obj_dict_store(MP_OBJ_FROM_PTR(mp_globals_get()), MP_OBJ_NEW_QSTR(qst), obj);
 }
 
 void mp_delete_global(qstr qst) {
     DEBUG_OP_printf("delete global %s\n", qstr_str(qst));
     // TODO convert KeyError to NameError if qst not found
+    if (is_mp_init_finished()) {
+        mp_raise_msg(&mp_type_NameError, "delete global not allowed!");
+    }
     mp_obj_dict_delete(MP_OBJ_FROM_PTR(mp_globals_get()), MP_OBJ_NEW_QSTR(qst));
 }
 
