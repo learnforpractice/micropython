@@ -54,12 +54,47 @@ struct eosapi* mp_get_eosapi() {
 void* execute_from_str(const char *str);
 
 static struct mpapi* caller_api = NULL;
+static struct mpapi s_mp_api;
+
 int is_mp_init_finished() {
    if (!caller_api) {
       return 0;
    }
    return caller_api->init;
 }
+
+struct mpapi* mp_get_mpapi() {
+   static int _init = 0;
+   if (_init) {
+      return &s_mp_api;
+   }
+   s_mp_api.mp_obj_new_str = mp_obj_new_str;
+   s_mp_api.mp_obj_new_bytes = mp_obj_new_bytes;
+
+   s_mp_api.micropy_load_from_py = micropy_load_from_py;
+   s_mp_api.micropy_load_from_mpy = micropy_load_from_mpy;
+   s_mp_api.micropy_call_0 = micropy_call_0;
+   s_mp_api.micropy_call_2 = micropy_call_2;
+   s_mp_api.micropy_call_3 = micropy_call_3;
+
+   s_mp_api.execute_from_str = execute_from_str;
+
+   s_mp_api.execution_start = execution_start;
+   s_mp_api.execution_end = execution_end;
+   s_mp_api.set_max_execution_time = set_max_execution_time;
+   s_mp_api.get_execution_time = get_execution_time;
+
+   s_mp_api.main_micropython = main_micropython;
+   s_mp_api.mp_call_function_0 = mp_call_function_0;
+   s_mp_api.mp_compile = mp_compile;
+
+   s_mp_api.compile_and_save_to_buffer = compile_and_save_to_buffer;
+   s_mp_api.set_debug_mode = py_set_debug_mode;
+   s_mp_api.set_printer = set_printer;
+
+   return &s_mp_api;
+}
+
 void mp_obtain_mpapi(struct mpapi * _api) {
    if (!_api) {
       return;
