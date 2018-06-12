@@ -152,17 +152,17 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_VAR(mod_db_end_i64_obj, 3, mod_db_end_i64);
 STATIC const mp_rom_map_elem_t mp_module_db_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR___name__), MP_ROM_QSTR(MP_QSTR_db) },
 
-	 { MP_ROM_QSTR(MP_QSTR_db_store_i64), MP_ROM_PTR(&mod_db_store_i64_obj) },
-	 { MP_ROM_QSTR(MP_QSTR_db_update_i64), MP_ROM_PTR(&mod_db_update_i64_obj) },
-	 { MP_ROM_QSTR(MP_QSTR_db_remove_i64), MP_ROM_PTR(&mod_db_remove_i64_obj) },
-	 { MP_ROM_QSTR(MP_QSTR_db_get_i64), MP_ROM_PTR(&mod_db_get_i64_obj) },
-    { MP_ROM_QSTR(MP_QSTR_db_get_i64_ex), MP_ROM_PTR(&mod_db_get_i64_ex_obj) },
-	 { MP_ROM_QSTR(MP_QSTR_db_previous_i64), MP_ROM_PTR(&mod_db_previous_i64_obj) },
-	 { MP_ROM_QSTR(MP_QSTR_db_next_i64), MP_ROM_PTR(&mod_db_next_i64_obj) },
-	 { MP_ROM_QSTR(MP_QSTR_db_find_i64), MP_ROM_PTR(&mod_db_find_i64_obj) },
-	 { MP_ROM_QSTR(MP_QSTR_db_lowerbound_i64), MP_ROM_PTR(&mod_db_lowerbound_i64_obj) },
-	 { MP_ROM_QSTR(MP_QSTR_db_upperbound_i64), MP_ROM_PTR(&mod_db_upperbound_i64_obj) },
-	 { MP_ROM_QSTR(MP_QSTR_db_end_i64), MP_ROM_PTR(&mod_db_end_i64_obj) },
+	 { MP_ROM_QSTR(MP_QSTR_store_i64), MP_ROM_PTR(&mod_db_store_i64_obj) },
+	 { MP_ROM_QSTR(MP_QSTR_update_i64), MP_ROM_PTR(&mod_db_update_i64_obj) },
+	 { MP_ROM_QSTR(MP_QSTR_remove_i64), MP_ROM_PTR(&mod_db_remove_i64_obj) },
+	 { MP_ROM_QSTR(MP_QSTR_get_i64), MP_ROM_PTR(&mod_db_get_i64_obj) },
+    { MP_ROM_QSTR(MP_QSTR_get_i64_ex), MP_ROM_PTR(&mod_db_get_i64_ex_obj) },
+	 { MP_ROM_QSTR(MP_QSTR_previous_i64), MP_ROM_PTR(&mod_db_previous_i64_obj) },
+	 { MP_ROM_QSTR(MP_QSTR_next_i64), MP_ROM_PTR(&mod_db_next_i64_obj) },
+	 { MP_ROM_QSTR(MP_QSTR_find_i64), MP_ROM_PTR(&mod_db_find_i64_obj) },
+	 { MP_ROM_QSTR(MP_QSTR_lowerbound_i64), MP_ROM_PTR(&mod_db_lowerbound_i64_obj) },
+	 { MP_ROM_QSTR(MP_QSTR_upperbound_i64), MP_ROM_PTR(&mod_db_upperbound_i64_obj) },
+	 { MP_ROM_QSTR(MP_QSTR_end_i64), MP_ROM_PTR(&mod_db_end_i64_obj) },
 
 };
 
