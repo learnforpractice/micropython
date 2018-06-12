@@ -20,7 +20,7 @@ add_custom_command(
 #    COMMAND touch ${CMAKE_CURRENT_SOURCE_DIR}/ports/unix/build/frozen.c
     WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/ports/unix
     COMMENT "build vm_py"
-    DEPENDS  ${CMAKE_CURRENT_SOURCE_DIR}/ports/unix/build/libaxtls.a ${CMAKE_CURRENT_SOURCE_DIR}/extmod/eoslib/modeoslib.c ${CMAKE_CURRENT_SOURCE_DIR}/ports/unix/mpconfigport.h
+    DEPENDS  ${CMAKE_CURRENT_SOURCE_DIR}/ports/unix/build/libaxtls.a ${CMAKE_CURRENT_SOURCE_DIR}/extmod/eoslib/modeoslib.c ${CMAKE_CURRENT_SOURCE_DIR}/extmod/eoslib/moddb.c ${CMAKE_CURRENT_SOURCE_DIR}/ports/unix/mpconfigport.h
 )
 
 set (SRC_FILES ${CMAKE_CURRENT_SOURCE_DIR}/ports/unix/build/frozen.c
@@ -60,6 +60,7 @@ set (SRC_FILES ${CMAKE_CURRENT_SOURCE_DIR}/ports/unix/build/frozen.c
 #extmod/rai/modrailib.c
 
     py/mp_compiler.c
+    extmod/eoslib/moddb.c
     extmod/eoslib/modeoslib.c
     extmod/eoslib/frozenmod.cpp
     extmod/crypto-algorithms/xxhash.c
