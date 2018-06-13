@@ -201,7 +201,8 @@ void mp_store_name(qstr qst, mp_obj_t obj) {
 void mp_store_name_ex(qstr qst, mp_obj_t obj) {
     DEBUG_OP_printf("store name %s <- %p\n", qstr_str(qst), obj);
     if (is_mp_init_finished()) {
-       if (!MP_OBJ_IS_FUN(obj)) {
+       if (MP_OBJ_IS_FUN(obj) || MP_OBJ_IS_MOD(obj)) {
+       } else {
           mp_raise_msg(&mp_type_NameError, "store name not allowed!");
        }
     }
