@@ -20,8 +20,11 @@ uint64_t get_execution_time();
 
 //main_eos.c
 void* execute_from_str(const char *str);
-
 int main_micropython(int argc, char **argv);
+
+int compile_and_save_to_buffer(const char* src_name, const char *src_buffer, size_t src_size, char* buffer, size_t size);
+//mpprint.c
+void set_printer(fn_printer _printer);
 }
 
 
@@ -165,7 +168,7 @@ void vm_py::apply(uint64_t receiver, uint64_t account, uint64_t act, const char*
       }
       uint64_t execution_time = get_execution_time();
       if (execution_time > 1000) {
-         printf("+++++++call module %s, cost: %llu", name{account}.to_string().c_str(), execution_time);
+         printf("+++++++call module %s, cost: %llu\n", name{account}.to_string().c_str(), execution_time);
       }
       execution_end();
       get_vm_api()->eosio_assert(ret != 0, "code execution with exception!");
@@ -201,15 +204,10 @@ int apply(uint64_t receiver, uint64_t account, uint64_t act) {
    return 1;
 }
 
-extern "C" {
-int compile_and_save_to_buffer(const char* src_name, const char *src_buffer, size_t src_size, char* buffer, size_t size);
-//mpprint.c
-void set_printer(fn_printer _printer);
-}
-
 static struct vm_py_api s_vm_py_api;
 
 void init_vm() {
+   s_vm_py_api.set_max_execution_time = set_max_execution_time;
    s_vm_py_api.compile_and_save_to_buffer = compile_and_save_to_buffer;
    s_vm_py_api.set_printer = set_printer;
 

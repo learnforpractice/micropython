@@ -1,5 +1,6 @@
 #include <eosiolib_native/vm_api.h>
 #include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
 
 #include "xxhash.h"
@@ -111,6 +112,36 @@ STATIC mp_obj_t mod_eoslib_N(mp_obj_t obj) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_1(mod_eoslib_N_obj, mod_eoslib_N);
 
+STATIC mp_obj_t mod_eoslib_n2s(mp_obj_t obj) {
+   char buf[32];
+   uint64_t n = mp_obj_get_uint(obj);
+   int size = get_vm_api()->uint64_to_string(n, buf, sizeof(buf));
+   return mp_obj_new_str(buf, size);
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_1(mod_eoslib_n2s_obj, mod_eoslib_n2s);
+
+STATIC mp_obj_t mod_eoslib_s2n(mp_obj_t obj) {
+   size_t len;
+   const char *account = mp_obj_str_get_data(obj, &len);
+   uint64_t n = get_vm_api()->string_to_uint64(account);
+   return mp_obj_new_int_from_ll(n);
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_1(mod_eoslib_s2n_obj, mod_eoslib_s2n);
+
+STATIC mp_obj_t mod_eoslib_S(mp_obj_t obj1, mp_obj_t obj2) {
+   uint64_t ret;
+   uint8_t precision;
+   const char* str;
+   size_t len;
+
+   precision = (uint8_t)mp_obj_get_uint(obj1);
+   str = mp_obj_str_get_data(obj2, &len);
+
+   ret = get_vm_api()->string_to_symbol(precision, str);
+   return mp_obj_new_int_from_ll(ret);
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_2(mod_eoslib_S_obj, mod_eoslib_S);
+
 
 STATIC const mp_rom_map_elem_t mp_module_eoslib_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR___name__), MP_ROM_QSTR(MP_QSTR_eoslib) },
@@ -131,6 +162,10 @@ STATIC const mp_rom_map_elem_t mp_module_eoslib_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR_hash64), MP_ROM_PTR(&mod_eoslib_hash64_obj) },
 
     { MP_ROM_QSTR(MP_QSTR_N), MP_ROM_PTR(&mod_eoslib_N_obj) },
+    { MP_ROM_QSTR(MP_QSTR_n2s), MP_ROM_PTR(&mod_eoslib_n2s_obj) },
+    { MP_ROM_QSTR(MP_QSTR_s2n), MP_ROM_PTR(&mod_eoslib_s2n_obj) },
+    { MP_ROM_QSTR(MP_QSTR_S), MP_ROM_PTR(&mod_eoslib_S_obj) },
+
 };
 
 STATIC MP_DEFINE_CONST_DICT(mp_module_eoslib_globals, mp_module_eoslib_globals_table);

@@ -1,5 +1,6 @@
 #include <eosiolib_native/vm_api.h>
 #include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
 
 #include "xxhash.h"
