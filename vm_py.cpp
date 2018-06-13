@@ -1,4 +1,6 @@
 #include "vm_py.hpp"
+#include "vm_py_api.h"
+
 #include "xxhash.h"
 
 using namespace eosio;
@@ -19,6 +21,7 @@ uint64_t get_execution_time();
 //main_eos.c
 void* execute_from_str(const char *str);
 
+int main_micropython(int argc, char **argv);
 }
 
 
@@ -30,8 +33,13 @@ const char * init_mp = "" \
 "    __import__(mod)\n"
 ;
 
+static int _init = 0;
+
+extern "C" int is_mp_init_finished() {
+   return _init;
+}
+
 void init() {
-   static int _init = 0;
    if (_init) {
       return;
    }
@@ -193,4 +201,22 @@ int apply(uint64_t receiver, uint64_t account, uint64_t act) {
    return 1;
 }
 
+extern "C" {
+int compile_and_save_to_buffer(const char* src_name, const char *src_buffer, size_t src_size, char* buffer, size_t size);
+//mpprint.c
+void set_printer(fn_printer _printer);
+}
+
+static struct vm_py_api s_vm_py_api;
+
+void init_vm() {
+   s_vm_py_api.compile_and_save_to_buffer = compile_and_save_to_buffer;
+   s_vm_py_api.set_printer = set_printer;
+
+   main_micropython(0, NULL);
+}
+
+extern "C" struct vm_py_api* get_py_vm_api() {
+   return &s_vm_py_api;
+}
 
