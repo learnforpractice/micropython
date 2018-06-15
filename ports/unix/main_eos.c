@@ -368,6 +368,10 @@ int main_micropython(int argc, char **argv) {
     return ret;
 }
 
+#if MICROPY_ENABLE_GC
+static char *heap = NULL;
+#endif
+
 MP_NOINLINE int main_(int argc, char **argv) {
     #ifdef SIGPIPE
     // Do not raise SIGPIPE, instead return EPIPE. Otherwise, e.g. writing
@@ -386,7 +390,7 @@ MP_NOINLINE int main_(int argc, char **argv) {
     mp_stack_set_limit(400000 * (BYTES_PER_WORD / 4));
 
 #if MICROPY_ENABLE_GC
-    char *heap = malloc(heap_size);
+    heap = malloc(heap_size);
     gc_init(heap, heap + heap_size);
 #endif
 
@@ -632,4 +636,14 @@ void* execute_from_str(const char *str) {
         // uncaught exception
         return (mp_obj_t)nlr.ret_val;
     }
+}
+
+void micropython_finalize() {
+   mp_deinit();
+
+   #if MICROPY_ENABLE_GC && !defined(NDEBUG)
+   // We don't really need to free memory since we are about to exit the
+   // process, but doing so helps to find memory leaks.
+   free(heap);
+   #endif
 }

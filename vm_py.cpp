@@ -206,12 +206,19 @@ int apply(uint64_t receiver, uint64_t account, uint64_t act) {
 
 static struct vm_py_api s_vm_py_api;
 
-void init_vm() {
+void vm_init() {
    s_vm_py_api.set_max_execution_time = set_max_execution_time;
    s_vm_py_api.compile_and_save_to_buffer = compile_and_save_to_buffer;
    s_vm_py_api.set_printer = set_printer;
 
    main_micropython(0, NULL);
+}
+
+extern "C" void micropython_finalize();
+
+void vm_deinit() {
+   printf("vm_py finalize\n");
+   micropython_finalize();
 }
 
 extern "C" struct vm_py_api* get_py_vm_api() {
