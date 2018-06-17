@@ -93,6 +93,7 @@ void vm_py::setcode(uint64_t _account) {
 //   ilog("++++++++++update code ${n1}", ("n1", name(_account).to_string()));
    mp_obj_t obj = nullptr;
    mp_raw_code_t* raw_code = nullptr;
+   mp_stack_set_top(&raw_code);
    execution_start();
    if (code[0] == 0) {//py
       obj = micropy_load_from_py(name{_account}.to_string().c_str(), (const char*)&code[1], size-1);
@@ -135,7 +136,7 @@ void vm_py::apply(uint64_t receiver, uint64_t account, uint64_t act, const char*
    try {
       mp_obj_t obj = nullptr;
       mp_raw_code_t* raw_code = nullptr;
-
+      mp_stack_set_top(&raw_code);
       auto itr = pymodules.find(receiver);
       if (itr != pymodules.end()) {
          obj = itr->second->obj;

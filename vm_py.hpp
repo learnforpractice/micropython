@@ -18,6 +18,8 @@ extern "C" {
 #include "py/stream.h"
 #include "py/parse.h"
 #include "py/emitglue.h"
+#include "py/stackctrl.h"
+#include "py/gc.h"
 }
 
 #ifndef VM_PY_VM_PY_HPP_
