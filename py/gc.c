@@ -104,11 +104,23 @@
 #define GC_EXIT()
 #endif
 
+mp_state_mem_t g_mem;
+
+mp_state_mem_t* gc_get_current_mem() {
+   return mp_state_ctx.mem;
+}
+
+void gc_set_current_mem(mp_state_mem_t* mem) {
+    mp_state_ctx.mem = mem;
+ }
+
 // TODO waste less memory; currently requires that all entries in alloc_table have a corresponding block in pool
 void gc_init(void *start, void *end) {
     // align end pointer on block boundary
     end = (void*)((uintptr_t)end & (~(BYTES_PER_BLOCK - 1)));
     DEBUG_printf("Initializing GC heap: %p..%p = " UINT_FMT " bytes\n", start, end, (byte*)end - (byte*)start);
+
+    mp_state_ctx.mem = &g_mem;
 
     // calculate parameters for GC (T=total, A=alloc table, F=finaliser table, P=pool; all in bytes):
     // T = A + F + P

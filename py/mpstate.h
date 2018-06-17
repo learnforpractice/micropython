@@ -250,13 +250,13 @@ typedef struct _mp_state_thread_t {
 typedef struct _mp_state_ctx_t {
     mp_state_thread_t thread;
     mp_state_vm_t vm;
-    mp_state_mem_t mem;
+    mp_state_mem_t* mem;
 } mp_state_ctx_t;
 
 extern mp_state_ctx_t mp_state_ctx;
 
 #define MP_STATE_VM(x) (mp_state_ctx.vm.x)
-#define MP_STATE_MEM(x) (mp_state_ctx.mem.x)
+#define MP_STATE_MEM(x) (mp_state_ctx.mem->x)
 
 #if MICROPY_PY_THREAD
 extern mp_state_thread_t *mp_thread_get_state(void);
