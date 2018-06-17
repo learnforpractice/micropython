@@ -39,9 +39,11 @@ private:
       void* obj;
       mp_raw_code_t* raw_code;
       checksum512 hash;
+      mp_state_mem_t mem;
+      char heap[1024*64];
    };
 
-   std::map<uint64_t, py_module*> pymodules;
+   std::map<uint64_t, std::unique_ptr<py_module>> pymodules;
 
    vm_py();
 };

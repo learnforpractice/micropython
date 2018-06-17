@@ -25,6 +25,10 @@ int main_micropython(int argc, char **argv);
 int compile_and_save_to_buffer(const char* src_name, const char *src_buffer, size_t src_size, char* buffer, size_t size);
 //mpprint.c
 void set_printer(fn_printer _printer);
+
+mp_state_mem_t* gc_get_current_mem();
+void gc_set_current_mem(mp_state_mem_t* mem);
+void gc_init(void *start, void *end);
 }
 
 
@@ -114,14 +118,12 @@ void vm_py::setcode(uint64_t _account) {
    if (obj == NULL) {
       get_vm_api()->eosio_assert(false, "load micropython code failed!");
    } else {
-      if (_itr != pymodules.end()) {
-         delete _itr->second;
-      }
-      py_module* mod = new py_module();
+      std::unique_ptr<py_module> mod = std::make_unique<py_module>();
+//      py_module* mod = new py_module();
       mod->obj = obj;
       mod->raw_code = raw_code;
       memcpy(&mod->hash, &hash, sizeof(hash));
-      pymodules[_account] = mod;
+      pymodules[_account] = std::move(mod);
    }
 }
 
@@ -155,12 +157,12 @@ void vm_py::apply(uint64_t receiver, uint64_t account, uint64_t act, const char*
             checksum512 hash;
             get_vm_api()->sha512( (char*)code, size, &hash );
 
-            py_module* mod = new py_module();
+            std::unique_ptr<py_module> mod = std::make_unique<py_module>();
             mod->obj = obj;
             mod->raw_code = raw_code;
 
             memcpy(&mod->hash, &hash, sizeof(hash));
-            pymodules[account] = mod;
+            pymodules[account] = std::move(mod);
          }
       }
       mp_obj_t ret = 0;
