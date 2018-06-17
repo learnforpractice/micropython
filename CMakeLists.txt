@@ -58,7 +58,7 @@ set (SRC_FILES ${CMAKE_CURRENT_SOURCE_DIR}/ports/unix/build/frozen.c
 #extmod/uos_dupterm.c
 #extmod/modframebuf.c
 #extmod/rai/modrailib.c
-
+    py/pystack.c
     py/mp_compiler.c
     extmod/eoslib/moddb.c
     extmod/eoslib/modeoslib.c

@@ -179,7 +179,7 @@ STATIC const mp_rom_map_elem_t mp_module_micropython_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR_alloc_emergency_exception_buf), MP_ROM_PTR(&mp_alloc_emergency_exception_buf_obj) },
 #endif
     #if MICROPY_ENABLE_PYSTACK
-    { MP_ROM_QSTR(MP_QSTR_pystack_use), MP_ROM_PTR(&mp_micropython_pystack_use_obj) },
+//    { MP_ROM_QSTR(MP_QSTR_pystack_use), MP_ROM_PTR(&mp_micropython_pystack_use_obj) },
     #endif
     #if MICROPY_ENABLE_GC
     { MP_ROM_QSTR(MP_QSTR_heap_lock), MP_ROM_PTR(&mp_micropython_heap_lock_obj) },
