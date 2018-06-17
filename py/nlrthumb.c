@@ -78,7 +78,7 @@ __attribute__((naked)) unsigned int nlr_push(nlr_buf_t *nlr) {
 
     #if !defined(__clang__) && defined(__GNUC__) && (__GNUC__ < 4 || (__GNUC__ == 4 && __GNUC_MINOR__ < 8))
     // Older versions of gcc give an error when naked functions don't return a value
-    // Additionally exclude Clang as it also defines __GNUC__.
+    // Additionally exclude Clang as it also defines __GNUC__ but doesn't need this statement
     return 0;
     #endif
 }

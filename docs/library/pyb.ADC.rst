@@ -76,7 +76,59 @@ Methods
            for val in buf:                     # loop over all values
                print(val)                      # print the value out
 
-       This function does not allocate any memory.
+       This function does not allocate any heap memory. It has blocking behaviour:
+       it does not return to the calling program until the buffer is full.
+
+    .. method:: ADC.read_timed_multi((adcx, adcy, ...), (bufx, bufy, ...), timer)
+
+       This is a static method. It can be used to extract relative timing or
+       phase data from multiple ADC's.
+
+       It reads analog values from multiple ADC's into buffers at a rate set by
+       the *timer* object. Each time the timer triggers a sample is rapidly
+       read from each ADC in turn.
+
+       ADC and buffer instances are passed in tuples with each ADC having an
+       associated buffer. All buffers must be of the same type and length and
+       the number of buffers must equal the number of ADC's.
+
+       Buffers can be ``bytearray`` or ``array.array`` for example. The ADC values
+       have 12-bit resolution and are stored directly into the buffer if its element
+       size is 16 bits or greater.  If buffers have only 8-bit elements (eg a
+       ``bytearray``) then the sample resolution will be reduced to 8 bits.
+
+       *timer* must be a Timer object. The timer must already be initialised
+       and running at the desired sampling frequency.
+
+       Example reading 3 ADC's::
+
+           adc0 = pyb.ADC(pyb.Pin.board.X1)    # Create ADC's
+           adc1 = pyb.ADC(pyb.Pin.board.X2)
+           adc2 = pyb.ADC(pyb.Pin.board.X3)
+           tim = pyb.Timer(8, freq=100)        # Create timer
+           rx0 = array.array('H', (0 for i in range(100))) # ADC buffers of
+           rx1 = array.array('H', (0 for i in range(100))) # 100 16-bit words
+           rx2 = array.array('H', (0 for i in range(100)))
+           # read analog values into buffers at 100Hz (takes one second)
+           pyb.ADC.read_timed_multi((adc0, adc1, adc2), (rx0, rx1, rx2), tim)
+           for n in range(len(rx0)):
+               print(rx0[n], rx1[n], rx2[n])
+
+       This function does not allocate any heap memory. It has blocking behaviour:
+       it does not return to the calling program until the buffers are full.
+
+       The function returns ``True`` if all samples were acquired with correct
+       timing. At high sample rates the time taken to acquire a set of samples
+       can exceed the timer period. In this case the function returns ``False``,
+       indicating a loss of precision in the sample interval. In extreme cases
+       samples may be missed.
+
+       The maximum rate depends on factors including the data width and the
+       number of ADC's being read. In testing two ADC's were sampled at a timer
+       rate of 210kHz without overrun. Samples were missed at 215kHz.  For three
+       ADC's the limit is around 140kHz, and for four it is around 110kHz.
+       At high sample rates disabling interrupts for the duration can reduce the
+       risk of sporadic data loss.
 
 The ADCAll Object
 -----------------
@@ -113,49 +165,12 @@ The ADCAll Object
     Other analog input channels (0..15) will return unscaled integer values according to the selected
     precision.
 
-    To avoid unwanted activation of analog inputs (channel 0..15) a second prarmeter can be specified.
+    To avoid unwanted activation of analog inputs (channel 0..15) a second parameter can be specified.
     This parameter is a binary pattern where each requested analog input has the corresponding bit set.
     The default value is 0xffffffff which means all analog inputs are active. If just the internal
     channels (16..18) are required, the mask value should be 0x70000.
  
-    It is possible to access channle 16..18 values without incurring the side effects of ``ADCAll``::
-    
-        def adcread(chan):                              # 16 temp 17 vbat 18 vref
-            assert chan >= 16 and chan <= 18, 'Invalid ADC channel'
-            start = pyb.millis()
-            timeout = 100
-            stm.mem32[stm.RCC + stm.RCC_APB2ENR] |= 0x100 # enable ADC1 clock.0x4100
-            stm.mem32[stm.ADC1 + stm.ADC_CR2] = 1       # Turn on ADC
-            stm.mem32[stm.ADC1 + stm.ADC_CR1] = 0       # 12 bit
-            if chan == 17:
-                stm.mem32[stm.ADC1 + stm.ADC_SMPR1] = 0x200000 # 15 cycles
-                stm.mem32[stm.ADC + 4] = 1 << 23
-            elif chan == 18:
-                stm.mem32[stm.ADC1 + stm.ADC_SMPR1] = 0x1000000
-                stm.mem32[stm.ADC + 4] = 0xc00000
-            else:
-                stm.mem32[stm.ADC1 + stm.ADC_SMPR1] = 0x40000
-                stm.mem32[stm.ADC + 4] = 1 << 23
-            stm.mem32[stm.ADC1 + stm.ADC_SQR3] = chan
-            stm.mem32[stm.ADC1 + stm.ADC_CR2] = 1 | (1 << 30) | (1 << 10) # start conversion
-            while not stm.mem32[stm.ADC1 + stm.ADC_SR] & 2: # wait for EOC
-                if pyb.elapsed_millis(start) > timeout:
-                    raise OSError('ADC timout')
-            data = stm.mem32[stm.ADC1 + stm.ADC_DR]     # clear down EOC
-            stm.mem32[stm.ADC1 + stm.ADC_CR2] = 0       # Turn off ADC
-            return data
+    Example::
 
-        def v33():
-            return 4096 * 1.21 / adcread(17)
-
-        def vbat():
-            return  1.21 * 2 * adcread(18) / adcread(17)  # 2:1 divider on Vbat channel
-
-        def vref():
-            return 3.3 * adcread(17) / 4096
-
-        def temperature():
-            return 25 + 400 * (3.3 * adcread(16) / 4096 - 0.76)
-
-    Note that this example is only valid for the F405 MCU and all values are not corrected by Vref and
-    factory calibration data.
+        adcall = pyb.ADCAll(12, 0x70000) # 12 bit resolution, internal channels
+        temp = adcall.read_core_temp()
