@@ -37,7 +37,7 @@ int mp_find_frozen_module(const char *mod_name, size_t len, void **data) {
    } else if (path_num == 2) {
       code = get_vm_api()->string_to_uint64(path1);
       id = XXH64(path2, strlen(path2), 0);
-//      printf("+++++++++mp_find_frozen_module from account:%s %s\n", path1, path2);
+      printf("+++++++++mp_find_frozen_module from account:%s %s\n", path1, path2);
       //      ilog("+++++++++load code from account: ${n1} ${n2}", ("n1", _path[0])("n2", _path[1]));
    } else {
       return MP_FROZEN_NONE;
@@ -45,7 +45,7 @@ int mp_find_frozen_module(const char *mod_name, size_t len, void **data) {
 
    int itr = get_vm_api()->db_find_i64(code, code, code, id);
    if (itr < 0) {
-//      printf("+++++++mp_find_frozen_module not found!\n");
+      printf("+++++++mp_find_frozen_module not found!\n");
          return MP_FROZEN_NONE;
    }
 
@@ -86,10 +86,13 @@ mp_import_stat_t mp_frozen_stat(const char *mod_name) {
    char path2[128];
    memset(path1, 0, sizeof(path1));
    memset(path2, 0, sizeof(path2));
+    if (strcmp("genescienceinterface.mpy", mod_name) == 0) {
+        mod_name = mod_name;
+    }
 
    uint64_t code;
    uint64_t id;
-
+   printf("+++++++++mp_frozen_stat, mod_name: %s \n", mod_name);
    size_t path_num = get_vm_api()->split_path(mod_name, path1, sizeof(path1) - 1, path2, sizeof(path2) - 1);
 //   ilog("${n}", ("n", _dirs.size()));
 
@@ -108,7 +111,7 @@ mp_import_stat_t mp_frozen_stat(const char *mod_name) {
    } else if (path_num == 2) {
       code = get_vm_api()->string_to_uint64(path1);
       id = XXH64(path2, strlen(path2), 0);
-//      printf("+++++++++mp_frozen_stat: account:%s %s\n", path1, path2);
+      printf("+++++++++mp_frozen_stat: account:%s %s\n", path1, path2);
    } else {
       return MP_IMPORT_STAT_NO_EXIST;
    }
