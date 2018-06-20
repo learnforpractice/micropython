@@ -1,5 +1,9 @@
 #include <eosiolib_native/vm_api.h>
 
+#include <stdlib.h>
+#include <string.h>
+#include <stdio.h>
+
 #include <string>
 #include <vector>
 
