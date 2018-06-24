@@ -41,7 +41,7 @@
 
 //static uint64_t MAX_EXECUTION_TIME = 2000LL; //2ms
 static uint64_t execution_start_time = 0;
-static uint64_t max_execution_time = 2000LL; //2ms
+static uint64_t max_execution_time = 20000LL; //20ms
 uint64_t get_microseconds() {
    if (sysconf(_POSIX_THREAD_CPUTIME)){
       struct timespec tv;
