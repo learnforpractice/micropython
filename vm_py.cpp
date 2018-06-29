@@ -187,7 +187,7 @@ void vm_py::apply(uint64_t receiver, uint64_t account, uint64_t act) {
    apply(receiver, account, act, src, size);
 }
 
-void register_vm_api(struct vm_api* api) {
+void vm_register_api(struct vm_api* api) {
    s_api = *api;
 }
 
@@ -195,13 +195,13 @@ struct vm_api* get_vm_api() {
    return &s_api;
 }
 
-int setcode(uint64_t account) {
+int vm_setcode(uint64_t account) {
 //   printf("+++++micropython: setcode\n");
    vm_py::get().setcode(account);
    return 1;
 }
 
-int apply(uint64_t receiver, uint64_t account, uint64_t act) {
+int vm_apply(uint64_t receiver, uint64_t account, uint64_t act) {
 //   printf("+++++micropython: apply %s %s %s\n", name{receiver}.to_string().c_str(), name{account}.to_string().c_str(), name{act}.to_string().c_str());
    vm_py::get().apply(receiver, account, act);
    return 1;
