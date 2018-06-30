@@ -1,12 +1,13 @@
-#include <eosiolib_native/vm_api.h>
-
 #include <stdlib.h>
+#include <stdint.h>
 #include <string.h>
 #include <stdio.h>
 
+#include <eosiolib_native/vm_api.h>
+
 #include <string>
 #include <vector>
-
+#include <fc/ext_string.h>
 #include "extmod/crypto-algorithms/xxhash.h"
 
 extern "C" {
@@ -28,8 +29,9 @@ int mp_find_frozen_module(const char *mod_name, size_t len, void **data) {
    memset(path2, 0, sizeof(path2));
 
    int ret = MP_FROZEN_NONE;
-
-   size_t path_num = get_vm_api()->split_path(mod_name, path1, sizeof(path1)-1, path2, sizeof(path2)-1);
+   fc::ext_string s(mod_name);
+   auto ss = s.split('/');
+   size_t path_num = ss.size();
 //   ilog("${n}", ("n", _path.size()));
 
    uint64_t code;
@@ -39,9 +41,9 @@ int mp_find_frozen_module(const char *mod_name, size_t len, void **data) {
       code = get_vm_api()->get_action_account();
       id = XXH64(mod_name, len, 0);
    } else if (path_num == 2) {
-      code = get_vm_api()->string_to_uint64(path1);
-      id = XXH64(path2, strlen(path2), 0);
-      printf("+++++++++mp_find_frozen_module from account:%s %s\n", path1, path2);
+      code = get_vm_api()->string_to_uint64(ss[0].c_str());
+      id = XXH64(ss[1].c_str(), ss[1].size(), 0);
+      printf("+++++++++mp_find_frozen_module from account:%s %s\n", ss[0].c_str(), ss[1].c_str());
       //      ilog("+++++++++load code from account: ${n1} ${n2}", ("n1", _path[0])("n2", _path[1]));
    } else {
       return MP_FROZEN_NONE;
@@ -86,36 +88,29 @@ const char *mp_find_frozen_str(const char *str, size_t *len) {
 
 mp_import_stat_t mp_frozen_stat(const char *mod_name) {
 
-   char path1[128];
-   char path2[128];
-   memset(path1, 0, sizeof(path1));
-   memset(path2, 0, sizeof(path2));
-    if (strcmp("genescienceinterface.mpy", mod_name) == 0) {
-        mod_name = mod_name;
-    }
+    fc::ext_string s(mod_name);
+    auto ss = s.split('/');
 
    uint64_t code;
    uint64_t id;
    printf("+++++++++mp_frozen_stat, mod_name: %s \n", mod_name);
-   size_t path_num = get_vm_api()->split_path(mod_name, path1, sizeof(path1) - 1, path2, sizeof(path2) - 1);
+   size_t path_num = ss.size();
 //   ilog("${n}", ("n", _dirs.size()));
 
    if (path_num == 1) {
-      uint64_t _account = get_vm_api()->string_to_uint64(path1);
-//      ilog("+++++++++account: ${n1}", ("n1", _account));
+      uint64_t _account = get_vm_api()->string_to_uint64(ss[0].c_str());
 
       if (get_vm_api()->is_account(_account)) {
-//         ilog("+++++++++importing module from a account: ${n1}", ("n1", mod_name));
          return MP_IMPORT_STAT_DIR;
       }
 
       code = get_vm_api()->get_action_account();
-      id = XXH64(path1, strlen(path1), 0);
+      id = XXH64(ss[0].c_str(), strlen(ss[0].c_str()), 0);
 
    } else if (path_num == 2) {
-      code = get_vm_api()->string_to_uint64(path1);
-      id = XXH64(path2, strlen(path2), 0);
-      printf("+++++++++mp_frozen_stat: account:%s %s\n", path1, path2);
+      code = get_vm_api()->string_to_uint64(ss[0].c_str());
+      id = XXH64(ss[1].c_str(), ss[1].size(), 0);
+      printf("+++++++++mp_frozen_stat: account:%s %s\n", ss[0].c_str(), ss[1].c_str());
    } else {
       return MP_IMPORT_STAT_NO_EXIST;
    }

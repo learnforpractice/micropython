@@ -1,6 +1,3 @@
-#include <eosiolib_native/vm_api.h>
-#include <eosiolib/types.hpp>
-
 #include <vector>
 #include <string>
 #include <map>
@@ -11,6 +8,8 @@ using namespace std;
 #include <stdio.h>
 #include <string.h>
 #include <stdint.h>
+#include <eosiolib_native/vm_api.h>
+#include <eosiolib/types.hpp>
 
 extern "C" {
 #include "py/objlist.h"

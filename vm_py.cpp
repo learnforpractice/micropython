@@ -3,8 +3,9 @@
 
 #include "xxhash.h"
 
-using namespace eosio;
 static struct vm_api s_api;
+
+using namespace eosio;
 
 extern "C" {
 mp_obj_t micropy_load_from_py(const char *mod_name, const char *data, size_t len);

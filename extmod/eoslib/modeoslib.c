@@ -1,7 +1,9 @@
-#include <eosiolib_native/vm_api.h>
 #include <stdio.h>
+#include <stdint.h>
 #include <stdlib.h>
 #include <string.h>
+
+#include <eosiolib_native/vm_api.h>
 
 #include "xxhash.h"
 #include "py/runtime.h"
