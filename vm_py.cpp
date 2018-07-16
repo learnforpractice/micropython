@@ -220,6 +220,7 @@ void vm_init(struct vm_api* api) {
    s_vm_py_api.compile_and_save_to_buffer = compile_and_save_to_buffer;
    s_vm_py_api.set_printer = set_printer;
 
+   set_checktime(check_time);
    main_micropython(0, NULL);
 }
 
