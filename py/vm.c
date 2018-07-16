@@ -54,6 +54,20 @@ uint64_t get_microseconds() {
    return 0;
 }
 
+typedef void (*fn_checktime)();
+
+static fn_checktime s_checktime = NULL;
+
+void set_checktime(fn_checktime fn) {
+   s_checktime = fn;
+}
+
+void check_time() {
+   if (s_checktime) {
+      s_checktime();
+   }
+}
+
 void set_max_execution_time(int time) {
    max_execution_time = time;
 }
@@ -73,7 +87,10 @@ void execution_end() {
    execution_start_time = 0;
 }
 
-int is_execution_time_expire() {
+int is_execution_time_expired() {
+
+   check_time();
+
    if (execution_start_time) {
       return (execution_start_time + max_execution_time) < get_microseconds();
    }
@@ -174,7 +191,7 @@ mp_vm_return_kind_t mp_execute_bytecode(mp_code_state_t *code_state, volatile mp
 #if MICROPY_OPT_COMPUTED_GOTO
     #include "py/vmentrytable.h"
     #define DISPATCH() do { \
-      if (is_execution_time_expire()) { \
+      if (is_execution_time_expired()) { \
          mp_obj_t obj = mp_obj_new_exception_msg(&mp_type_RuntimeError, "execution timeout!"); \
          RAISE(obj); \
       } \
@@ -185,7 +202,7 @@ mp_vm_return_kind_t mp_execute_bytecode(mp_code_state_t *code_state, volatile mp
 
    #define DISPATCH_WITH_PEND_EXC_CHECK() \
    do { \
-      if (is_execution_time_expire()) { \
+      if (is_execution_time_expired()) { \
          mp_obj_t obj = mp_obj_new_exception_msg(&mp_type_RuntimeError, "execution timeout!"); \
          RAISE(obj); \
       } \
@@ -196,14 +213,14 @@ mp_vm_return_kind_t mp_execute_bytecode(mp_code_state_t *code_state, volatile mp
     #define ENTRY_DEFAULT entry_default
 #else
     #define DISPATCH() \
-      if (is_execution_time_expire()) { \
+      if (is_execution_time_expired()) { \
          mp_obj_t obj = mp_obj_new_exception_msg(&mp_type_RuntimeError, "execution timeout!"); \
          RAISE(obj); \
       } \
       goto dispatch_loop
 
    #define DISPATCH_WITH_PEND_EXC_CHECK() \
-      if (is_execution_time_expire()) { \
+      if (is_execution_time_expired()) { \
          mp_obj_t obj = mp_obj_new_exception_msg(&mp_type_RuntimeError, "execution timeout!"); \
          RAISE(obj); \
       } \

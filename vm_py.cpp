@@ -3,7 +3,7 @@
 
 #include "xxhash.h"
 
-static struct vm_api s_api;
+static struct vm_api s_api = {};
 
 using namespace eosio;
 
@@ -188,8 +188,12 @@ void vm_py::apply(uint64_t receiver, uint64_t account, uint64_t act) {
    apply(receiver, account, act, src, size);
 }
 
-void vm_register_api(struct vm_api* api) {
-   s_api = *api;
+typedef void (*fn_checktime)();
+extern "C" void set_checktime(fn_checktime fn);
+void check_time() {
+   if (s_api.checktime) {
+      s_api.checktime();
+   }
 }
 
 struct vm_api* get_vm_api() {
@@ -210,7 +214,8 @@ int vm_apply(uint64_t receiver, uint64_t account, uint64_t act) {
 
 static struct vm_py_api s_vm_py_api;
 
-void vm_init() {
+void vm_init(struct vm_api* api) {
+   s_api = *api;
    s_vm_py_api.set_max_execution_time = set_max_execution_time;
    s_vm_py_api.compile_and_save_to_buffer = compile_and_save_to_buffer;
    s_vm_py_api.set_printer = set_printer;
@@ -228,4 +233,5 @@ void vm_deinit() {
 extern "C" struct vm_py_api* get_py_vm_api() {
    return &s_vm_py_api;
 }
+
 
