@@ -189,6 +189,7 @@ set (INCLUDE_DIRS   PRIVATE ${CMAKE_SOURCE_DIR}/contracts
                     PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/extmod/crypto-algorithms
                     PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/ports/unix
                     PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/ports/unix/build
+                    PRIVATE ${CMAKE_SOURCE_DIR}/libraries/softfloat/source/include
                     PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
 
 #vm_py1
