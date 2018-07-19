@@ -105,6 +105,7 @@ endif
 
 INC +=  -I$(TOP)/extmod/crypto-algorithms
 INC +=  -I$(TOP)/../../contracts
+INC +=  -I$(TOP)/../../libraries/softfloat/source/include
 
 # py object files
 PY_CORE_O_BASENAME = $(addprefix py/,\
