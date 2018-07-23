@@ -52,7 +52,7 @@ void init() {
       return;
    }
 
-   printf("Initialize common library.\n");
+//   printf("Initialize common library.\n");
 
    uint64_t hash = XXH64("storage.mpy", strlen("storage.mpy"), 0);
 
