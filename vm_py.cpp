@@ -212,6 +212,10 @@ int vm_apply(uint64_t receiver, uint64_t account, uint64_t act) {
    return 1;
 }
 
+int vm_call(uint64_t account, uint64_t func) {
+   return 0;
+}
+
 static struct vm_py_api s_vm_py_api;
 
 void vm_init(struct vm_api* api) {
