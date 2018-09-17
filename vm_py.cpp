@@ -202,6 +202,12 @@ struct vm_api* get_vm_api() {
 
 int vm_setcode(uint64_t account) {
 //   printf("+++++micropython: setcode\n");
+   size_t size = 0;
+   const char* code = get_vm_api()->get_code(account, &size);
+   if (size <= 0) {
+      return 1;
+   }
+
    vm_py::get().setcode(account);
    return 1;
 }
